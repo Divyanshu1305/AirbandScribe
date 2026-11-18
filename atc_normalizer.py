@@ -1,5 +1,5 @@
 """
-ATC Terminology Normalizer and Post-Processor.
+AirbandScribe — Domain-Specific ATC Phraseology Normalizer & Post-Processor.
 Cleans up, standardizes, and enhances aviation radio transcripts for terms like
 runways, headings, altitudes, flight levels, localizers, and callsigns.
 """

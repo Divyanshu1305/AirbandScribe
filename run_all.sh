@@ -6,7 +6,7 @@ cd "$DIR"
 chmod +x run_backend.sh run_frontend.sh
 
 echo "============================================================"
-echo "Launching ATC ASR Backend (Port 8000) and Frontend (Port 3000)..."
+echo "AirbandScribe // Launching Backend (:8000) & Frontend (:3000)..."
 echo "============================================================"
 
 ./run_backend.sh &

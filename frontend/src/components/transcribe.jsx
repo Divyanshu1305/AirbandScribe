@@ -1,96 +1,79 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 
 // ---------------------------------------------------------------------------
-// Mock data — shaped exactly like the real /transcribe response.
-// Swap MOCK_RESPONSE for a live fetch() to http://127.0.0.1:8000/transcribe
+// AirbandScribe // Aeronautical VHF Telemetry Mock Dataset
 // ---------------------------------------------------------------------------
-const MOCK_RESPONSE = {
+const MOCK_FLIGHT_RECORD = {
+    id: 1,
+    filename: 'KORD_APP_133.000_ARRIVALS.wav',
     language: 'en',
-    processing_time_seconds: 21.38,
+    processing_time_seconds: 14.82,
     speech_duration_seconds: 70.87,
     vad_enabled: true,
     noise_removal_enabled: true,
-    timestamp: '20260714_151652',
+    device: 'cpu',
+    timestamp: '20261119_014022',
     segments: [
-        { start: 2.29, end: 4.97, text: "one eight two heavy your two and a half miles" },
-        { start: 4.97, end: 7.66, text: "from lower cross lower three thousand feet above cleared ils" },
-        { start: 7.66, end: 10.34, text: "dme approach runway two seven maintain one hundred seventy knots" },
-        { start: 10.34, end: 13.03, text: "to rapet please ok confirm cleared ils cleared ils dme" },
-        { start: 13.03, end: 15.71, text: "approach runway two seven transportugal three two two heavy runway" },
-        { start: 15.71, end: 18.4, text: "two seven ok thank you cleared ils to seven portugal" },
-        { start: 18.4, end: 21.08, text: "three two heavy next eurotrans four five your miles from" },
-        { start: 21.08, end: 23.77, text: "wind cross wind a three thousand cleared ils two two" },
-        { start: 23.77, end: 26.45, text: "left approach hold short of runway two seven maintain speed" },
-        { start: 26.45, end: 29.13, text: "one seven zero till lindy contract all ok we'll do" },
-        { start: 29.13, end: 31.82, text: "it one eight four five american seven thirty six traffic" },
-        { start: 31.82, end: 34.5, text: "landing two two left or hold short of your runway" },
-        { start: 34.5, end: 37.19, text: "contact tower one one niner point one good day maintain" },
-        { start: 37.19, end: 39.87, text: "one good day final ten seventy two ils four eight" },
-        { start: 39.87, end: 42.56, text: "for five thousand kilo ten seventy two thanks ten eighty" },
-        { start: 42.56, end: 45.24, text: "present heading maintain four thousand kilo ten eighty present heading" },
-        { start: 45.24, end: 47.93, text: "descend to maintain four thousand descend to four thousand ten" },
-        { start: 47.93, end: 50.61, text: "eighty next five hundred tower one one niner point one" },
-        { start: 53.15, end: 56.01, text: "speedbird niner fifteen fly heading one niner zero and intercept" },
-        { start: 56.01, end: 58.86, text: "localizer descend to maintain three thousand one niner zero intercept" },
-        { start: 58.86, end: 61.15, text: "localizer down to three thousand feet niner fifteen" },
-        { start: 62.79, end: 65.24, text: "and ciao twenty one twelve is with you at one" },
-        { start: 65.24, end: 67.69, text: "point five cleared twenty one twelve roger proceed minus or" },
-        { start: 67.69, end: 70.14, text: "greater runway two seven roger ten eighty turn left heading" },
-        { start: 70.14, end: 70.87, text: "three six zero" },
+        { start: 2.29, end: 4.97, text: "United 182 heavy, radar contact, descend and maintain 3000 feet." },
+        { start: 4.97, end: 8.12, text: "Chicago approach, United 182 heavy, descending 3000 feet, heading 270." },
+        { start: 8.12, end: 11.45, text: "United 182 heavy, turn left heading 240, cleared ILS runway 27L approach." },
+        { start: 11.45, end: 14.30, text: "Cleared ILS runway 27L, maintain 170 knots to RAPET, United 182." },
+        { start: 14.30, end: 18.05, text: "Air Portugal 322 heavy, reduce speed to 160 knots, follow United heavy." },
+        { start: 18.05, end: 21.80, text: "Slowing 160 knots, Air Portugal 322 heavy, runway 27L in sight." },
+        { start: 21.80, end: 25.60, text: "American 736, turn right heading 290, climb and maintain FL240." },
+        { start: 25.60, end: 28.90, text: "Right heading 290, climb to flight level 240, American 736." },
+        { start: 28.90, end: 33.15, text: "American 736, contact Chicago center on 126.85, good day." },
+        { start: 33.15, end: 37.40, text: "Delta 1080, fly present heading, descend to 4000 feet, squawk 4721." },
+        { start: 37.40, end: 41.50, text: "Maintain 4000 feet, present heading, squawk 4721, Delta 1080." },
+        { start: 41.50, end: 45.80, text: "Speedbird 915, intercept localizer runway 27L, descend to 3000 feet." },
+        { start: 45.80, end: 50.10, text: "Localizer established runway 27L, down to 3000 feet, Speedbird 915." },
+        { start: 50.10, end: 54.20, text: "United 182 heavy, contact O'Hare tower on 119.100, good night." },
+        { start: 54.20, end: 58.40, text: "119.1 over to tower, United 182 heavy, thanks for the vectors." },
+        { start: 58.40, end: 63.20, text: "FedEx 2112, wind 260 at 12 knots, hold short of runway 27L." },
+        { start: 63.20, end: 67.50, text: "Holding short runway 27L, FedEx 2112 heavy." },
+        { start: 67.50, end: 70.87, text: "Delta 1080, turn left heading 360, cleared visual approach." }
     ],
     intermediate_chunks: [
         { chunk_num: 1, start_time: 0.0, end_time: 30.0 },
         { chunk_num: 2, start_time: 25.0, end_time: 55.0 },
-        { chunk_num: 3, start_time: 50.0, end_time: 80.0 },
-        { chunk_num: 4, start_time: 75.0, end_time: 105.0 },
-        { chunk_num: 5, start_time: 100.0, end_time: 130.0 },
-        { chunk_num: 6, start_time: 125.0, end_time: 155.0 },
-        { chunk_num: 7, start_time: 150.0, end_time: 180.0 },
-        { chunk_num: 8, start_time: 175.0, end_time: 205.0 },
-    ],
+        { chunk_num: 3, start_time: 50.0, end_time: 70.87 },
+    ]
 };
-MOCK_RESPONSE.filtered_full_path_rel = `output/filtered_full_${MOCK_RESPONSE.timestamp}.wav`;
-MOCK_RESPONSE.denoised_full_path_rel = `output/denoised_full_${MOCK_RESPONSE.timestamp}.wav`;
-MOCK_RESPONSE.device = 'cuda';
-MOCK_RESPONSE.intermediate_chunks = Array.from({ length: 24 }, (_, i) => {
-    const chunk_num = i + 1;
-    const start_time = i * 25.0;
-    const end_time = Math.min(600.0, start_time + 30.0);
-    return {
-        chunk_num,
-        start_time,
-        end_time,
-        filtered_path_rel: `output/filtered_chunk_${chunk_num}_${MOCK_RESPONSE.timestamp}.wav`,
-        denoised_path_rel: `output/denoised_chunk_${chunk_num}_${MOCK_RESPONSE.timestamp}.wav`,
-    };
-});
-MOCK_RESPONSE.text = MOCK_RESPONSE.segments.map((s) => s.text).join(' ');
+MOCK_FLIGHT_RECORD.text = MOCK_FLIGHT_RECORD.segments.map(s => s.text).join(' ');
 
 // ---------------------------------------------------------------------------
-// ATC phraseology tagger — flags callsigns, altitudes, headings, runways,
-// clearance verbs so the transcript reads like a strip, not a wall of text.
+// Airband ATC Phraseology Lexicon & Tokenizer
 // ---------------------------------------------------------------------------
-const PATTERNS = [
-    { re: /\b(cleared|maintain|contact|descend|climb|turn left|turn right|hold short|reduce speed)\b/gi, cls: 'tok-verb' },
-    { re: /\brunway two\s(seven|two left|two)\b/gi, cls: 'tok-runway' },
-    { re: /\b(one|two|three|four|five|six|seven|eight|niner|nine|zero)\s(hundred|thousand)\b/gi, cls: 'tok-alt' },
-    { re: /\bheading\s(one|two|three|zero|niner|nine)?\s?[\w\s]{0,12}?(zero|one|two|three|four|five|six|seven|eight|niner|nine)\b/gi, cls: 'tok-heading' },
-    { re: /\b(ils|dme|localizer|qnh|vfr)\b/gi, cls: 'tok-nav' },
+const ATC_PATTERNS = [
+    { re: /\b(cleared|maintain|contact|descend|climb|turn left|turn right|hold short|reduce speed|intercept|squawk|radar contact|established)\b/gi, cls: 'tok-verb' },
+    { re: /\b(runway\s\d{1,2}[LRC]?|RWY\s\d{1,2}[LRC]?)\b/gi, cls: 'tok-runway' },
+    { re: /\b(FL\d{2,3}|flight level \d{2,3}|\d{1,2},?\d{3}\s?feet|\d{3,4}\s?ft)\b/gi, cls: 'tok-alt' },
+    { re: /\b(heading\s\d{3}|HDG\s\d{3})\b/gi, cls: 'tok-heading' },
+    { re: /\b(ils|dme|localizer|qnh|vfr|ifr|vor|tacan|rnav)\b/gi, cls: 'tok-nav' },
+    { re: /\b(1\d{2}\.\d{1,3}\s?mhz|1\d{2}\.\d{1,3})\b/gi, cls: 'tok-freq' },
+    { re: /\b(United|American|Delta|Speedbird|FedEx|Air Portugal|Southwest|Skywest|Cessna|Boeing|Airbus)\s\d{2,4}\s?(heavy)?\b/gi, cls: 'tok-callsign' }
 ];
 
-function tagText(text) {
-    // Build a list of non-overlapping matches, first-match-wins by pattern order.
+function tagAviationText(text) {
+    if (!text) return [];
     const marks = new Array(text.length).fill(null);
-    PATTERNS.forEach(({ re, cls }) => {
+    ATC_PATTERNS.forEach(({ re, cls }) => {
         let m;
         const rx = new RegExp(re.source, re.flags);
         while ((m = rx.exec(text)) !== null) {
             if (m[0].length === 0) { rx.lastIndex++; continue; }
             let clash = false;
-            for (let i = m.index; i < m.index + m[0].length; i++) if (marks[i]) { clash = true; break; }
-            if (!clash) for (let i = m.index; i < m.index + m[0].length; i++) marks[i] = cls;
+            for (let i = m.index; i < m.index + m[0].length; i++) {
+                if (marks[i]) { clash = true; break; }
+            }
+            if (!clash) {
+                for (let i = m.index; i < m.index + m[0].length; i++) {
+                    marks[i] = cls;
+                }
+            }
         }
     });
+
     const nodes = [];
     let i = 0;
     while (i < text.length) {
@@ -110,324 +93,194 @@ function tagText(text) {
     return nodes;
 }
 
-function fmtTime(s) {
-    const m = Math.floor(s / 60);
-    const sec = (s % 60).toFixed(1).padStart(4, '0');
-    return `${String(m).padStart(2, '0')}:${sec}`;
+function fmtZulu(sec) {
+    if (isNaN(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    const ms = Math.floor((sec % 1) * 100);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
 }
 
-// ---------------------------------------------------------------------------
-// Synthetic audio buffer generator — stands in for the real chunk WAVs
-// (which live at local D:\ paths, not fetchable URLs). Each chunk gets a
-// distinct tone + light noise so filtered vs denoised are audibly different.
-// Swap generateChunkBuffer() for a real fetch(chunk.denoised_path_rel) once
-// your backend serves these statically.
-// ---------------------------------------------------------------------------
-function generateChunkBuffer(ctx, chunkNum, variant, durationSec) {
-    const sr = ctx.sampleRate;
-    const len = Math.floor(sr * durationSec);
-    const buf = ctx.createBuffer(1, len, sr);
-    const data = buf.getChannelData(0);
-    const baseFreq = 180 + (chunkNum % 8) * 35;
-    const noiseAmt = variant === 'filtered' ? 0.22 : 0.05;
-    for (let i = 0; i < len; i++) {
-        const t = i / sr;
-        const tone = Math.sin(2 * Math.PI * baseFreq * t) * 0.15
-            + Math.sin(2 * Math.PI * (baseFreq * 2.01) * t) * 0.05;
-        const noise = (Math.random() * 2 - 1) * noiseAmt;
-        const env = Math.min(1, t * 8) * Math.min(1, (durationSec - t) * 8 + 0.05);
-        data[i] = (tone + noise) * Math.max(0, env) * 0.5;
-    }
-    return buf;
+function fmtDuration(sec) {
+    if (isNaN(sec) || sec < 0) return '00:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// ---------------------------------------------------------------------------
-export default function ATCConsole() {
-    const [dataset, setDataset] = useState(MOCK_RESPONSE);
-    const data = dataset;
-    const totalDuration = data.speech_duration_seconds || 1;
-    const speedup = data.processing_time_seconds ? (data.speech_duration_seconds / data.processing_time_seconds).toFixed(1) : '0';
-
+export default function AirbandScribeConsole() {
+    // Dataset & Playback States
+    const [dataset, setDataset] = useState(MOCK_FLIGHT_RECORD);
     const [playhead, setPlayhead] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [activeSegIdx, setActiveSegIdx] = useState(-1);
-    const [viewMode, setViewMode] = useState('segments'); // segments | full
-    const [selectedChunk, setSelectedChunk] = useState(data.intermediate_chunks[0]?.chunk_num || 1);
-    const [chunkVariant, setChunkVariant] = useState('denoised'); // filtered | denoised
-    const [chunkPlaying, setChunkPlaying] = useState(false);
-    const [chunkLoading, setChunkLoading] = useState(false);
-    const [fullVariant, setFullVariant] = useState('denoised'); // filtered | denoised
+    const [playbackRate, setPlaybackRate] = useState(1.0);
+    const [audioVolume, setAudioVolume] = useState(1.0);
+    const [isMuted, setIsMuted] = useState(false);
+    const [loopSegment, setLoopSegment] = useState(false);
+    const [audioChannel, setAudioChannel] = useState('denoised'); // 'denoised' | 'filtered'
+    const [viewMode, setViewMode] = useState('strips'); // 'strips' | 'raw'
+    const [searchFilter, setSearchFilter] = useState('');
+    const [activeTab, setActiveTab] = useState('intel'); // 'intel' | 'chunks' | 'diagnostics'
 
-    // State for transcription history list
+    // Live Zulu Clock
+    const [zuluTime, setZuluTime] = useState('');
+    useEffect(() => {
+        const updateClock = () => {
+            const now = new Date();
+            setZuluTime(now.toISOString().slice(11, 19) + 'Z');
+        };
+        updateClock();
+        const timer = setInterval(updateClock, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    // Transcription History States
     const [historyList, setHistoryList] = useState([]);
     const [historyPage, setHistoryPage] = useState(1);
     const [historyTotalPages, setHistoryTotalPages] = useState(1);
     const [historyTotal, setHistoryTotal] = useState(0);
-    const [historyLimit] = useState(5);
     const [historyLoading, setHistoryLoading] = useState(false);
-    const [loadedHistoryId, setLoadedHistoryId] = useState(null);
+    const [loadedRecordId, setLoadedRecordId] = useState(dataset.id || null);
 
-    // State for transcription form
+    // Upload & Job States
     const [file, setFile] = useState(null);
-    const [applyNoiseRemoval, setApplyNoiseRemoval] = useState(true);
-    const [noiseReduction, setNoiseReduction] = useState(0.75);
-    const transcribeLang = 'en'; // English constant
-    const [transcribeDevice, setTranscribeDevice] = useState('cpu'); // cpu | cuda
-    const [saveIntermediate, setSaveIntermediate] = useState(true);
-    const [isTranscribing, setIsTranscribing] = useState(false);
-    const [transcribeError, setTranscribeError] = useState(null);
-    const [statusMessage, setStatusMessage] = useState('');
+    const [applyDenoise, setApplyDenoise] = useState(true);
+    const [denoiseCoeff, setDenoiseCoeff] = useState(0.75);
+    const [computeDevice, setComputeDevice] = useState('cpu');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [processStatus, setProcessStatus] = useState('');
+    const [processError, setProcessError] = useState(null);
 
-    const audioCtxRef = useRef(null);
-    const mainRafRef = useRef(null);
-    const mainStartRef = useRef(0);
-    const chunkSourceRef = useRef(null);
-    const segRefs = useRef({});
+    // Audio Element & Canvas Refs
+    const audioRef = useRef(null);
     const canvasRef = useRef(null);
-    const audioElRef = useRef(null);
-    const segListRef = useRef(null);
+    const animRef = useRef(null);
+    const stripListRef = useRef(null);
+    const stripRefs = useRef({});
 
-    if (!audioElRef.current) {
-        audioElRef.current = new Audio();
+    if (!audioRef.current) {
+        audioRef.current = new Audio();
     }
 
-    const getCtx = useCallback(() => {
-        if (!audioCtxRef.current) {
-            audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        return audioCtxRef.current;
-    }, []);
-
-    const fetchHistory = useCallback(async (page = 1) => {
+    // Initialize History
+    const loadHistory = useCallback(async (page = 1) => {
         setHistoryLoading(true);
         try {
-            const res = await fetch(`/transcriptions?page=${page}&limit=${historyLimit}`);
-            if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+            const res = await fetch(`/transcriptions?page=${page}&limit=6`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setHistoryList(data.transcriptions || []);
             setHistoryPage(data.page || 1);
             setHistoryTotal(data.total || 0);
             setHistoryTotalPages(data.pages || 1);
-            console.log("Loaded previous transcriptions list in console:", data.transcriptions);
         } catch (err) {
-            console.error("Failed to fetch transcription history:", err);
+            console.warn("History fetch warning:", err.message);
         } finally {
             setHistoryLoading(false);
         }
-    }, [historyLimit]);
+    }, []);
 
-    const loadHistoryItem = useCallback(async (id) => {
+    useEffect(() => {
+        loadHistory(1);
+    }, [loadHistory]);
+
+    // Load History Item
+    const loadHistoricalRecord = async (id) => {
         try {
             const res = await fetch(`/transcriptions/${id}`);
-            if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const detail = await res.json();
-            
             if (detail && detail.segments) {
-                if (!detail.text) {
-                    detail.text = detail.segments.map(s => s.text).join(' ');
-                }
-                
-                // Stop any playing audio before changing dataset
-                if (audioElRef.current) {
-                    audioElRef.current.pause();
-                }
+                if (audioRef.current) audioRef.current.pause();
                 setIsPlaying(false);
-                if (chunkSourceRef.current) {
-                    try { chunkSourceRef.current.stop(); } catch (e) { }
-                }
-                setChunkPlaying(false);
-                
                 setDataset(detail);
-                setLoadedHistoryId(detail.id);
+                setLoadedRecordId(detail.id);
                 setPlayhead(0);
-                if (detail.intermediate_chunks && detail.intermediate_chunks.length > 0) {
-                    setSelectedChunk(detail.intermediate_chunks[0].chunk_num);
-                }
-                setStatusMessage(`Loaded transcription ID ${detail.id}: ${detail.filename}`);
-                console.log(`Successfully loaded historical transcription details for ID ${detail.id}:`, detail);
+                setProcessStatus(`Loaded Record #${detail.id}: ${detail.filename}`);
             }
         } catch (err) {
-            console.error(`Failed to load transcription detail for ID ${id}:`, err);
-            setStatusMessage(`Failed to load historical transcription: ${err.message}`);
+            console.error("Failed to load historical record:", err);
         }
-    }, []);
+    };
 
-    const handleDeleteHistory = useCallback(async (e, id) => {
+    // Delete Historical Record
+    const deleteHistoricalRecord = async (e, id) => {
         e.stopPropagation();
-        if (!window.confirm(`Delete transcription record #${id}?`)) return;
+        if (!window.confirm(`Delete flight recording record #${id}?`)) return;
         try {
-            const res = await fetch(`/transcriptions/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-            if (loadedHistoryId === id) {
-                setLoadedHistoryId(null);
+            await fetch(`/transcriptions/${id}`, { method: 'DELETE' });
+            loadHistory(historyPage);
+            if (loadedRecordId === id) {
+                setLoadedRecordId(null);
             }
-            fetchHistory(historyPage);
-            setStatusMessage(`Deleted transcription #${id}`);
         } catch (err) {
-            console.error("Failed to delete transcription:", err);
-            setStatusMessage(`Failed to delete record: ${err.message}`);
+            console.error("Delete failed:", err);
         }
-    }, [fetchHistory, historyPage, loadedHistoryId]);
+    };
 
-    // Load transcription history on mount
+    // Derived Flight Intelligence Stats
+    const totalDuration = dataset.speech_duration_seconds || 1;
+    const speedup = dataset.processing_time_seconds
+        ? (dataset.speech_duration_seconds / dataset.processing_time_seconds).toFixed(1)
+        : '1.0';
+
+    // Extract ATC Entities Matrix
+    const extractedEntities = useMemo(() => {
+        const text = dataset.text || (dataset.segments || []).map(s => s.text).join(' ');
+        const callsigns = Array.from(new Set(text.match(ATC_PATTERNS[6].re) || []));
+        const runways = Array.from(new Set(text.match(ATC_PATTERNS[1].re) || []));
+        const altitudes = Array.from(new Set(text.match(ATC_PATTERNS[2].re) || []));
+        const headings = Array.from(new Set(text.match(ATC_PATTERNS[3].re) || []));
+        const freqs = Array.from(new Set(text.match(ATC_PATTERNS[5].re) || []));
+        return { callsigns, runways, altitudes, headings, freqs };
+    }, [dataset]);
+
+    // Active Segment Tracking
     useEffect(() => {
-        fetchHistory(1).then(() => {
-            // Fetch default mock transcription JSON
-            fetch('/output/segment_03_30-40min_transcription_20260714_151652.json')
-                .then(res => {
-                    if (!res.ok) throw new Error("Mock transcription JSON not found");
-                    return res.json();
-                })
-                .then(jsonData => {
-                    if (jsonData && jsonData.segments) {
-                        if (!jsonData.text) {
-                            jsonData.text = jsonData.segments.map(s => s.text).join(' ');
-                        }
-                        setDataset(jsonData);
-                    }
-                })
-                .catch(err => {
-                    console.log("Could not load full transcription JSON, using default truncated mock data:", err);
-                });
-        });
-    }, [fetchHistory]);
-
-    // Sync selected chunk if dataset changes
-    useEffect(() => {
-        if (data.intermediate_chunks && data.intermediate_chunks.length > 0) {
-            if (!data.intermediate_chunks.some(c => c.chunk_num === selectedChunk)) {
-                setSelectedChunk(data.intermediate_chunks[0].chunk_num);
-            }
-        }
-    }, [data.intermediate_chunks]);
-
-    // Handle audio element events
-    useEffect(() => {
-        const audio = audioElRef.current;
-        if (!audio) return;
-        
-        const handleTimeUpdate = () => {
-            if (!audio.paused) {
-                setPlayhead(audio.currentTime);
-            }
-        };
-        
-        const handleEnded = () => {
-            setIsPlaying(false);
-            setPlayhead(0);
-        };
-        
-        audio.addEventListener('timeupdate', handleTimeUpdate);
-        audio.addEventListener('ended', handleEnded);
-        
-        return () => {
-            audio.removeEventListener('timeupdate', handleTimeUpdate);
-            audio.removeEventListener('ended', handleEnded);
-            audio.pause();
-            audio.src = '';
-        };
-    }, []);
-
-    // Sync playhead when variant or dataset changes
-    useEffect(() => {
-        const audio = audioElRef.current;
-        if (!audio) return;
-        
-        const audioSrc = fullVariant === 'denoised' ? data.denoised_full_path_rel : data.filtered_full_path_rel;
-        const audioUrl = audioSrc ? `/${audioSrc}` : '';
-        
-        if (audioUrl && (!audio.src || !audio.src.includes(audioUrl))) {
-            const wasPlaying = isPlaying;
-            if (wasPlaying) audio.pause();
-            audio.src = audioUrl;
-            audio.load();
-            audio.currentTime = playhead;
-            if (wasPlaying) {
-                audio.play().catch(e => console.log("Audio play failed on variant change:", e));
-            }
-        }
-    }, [fullVariant, data.denoised_full_path_rel, data.filtered_full_path_rel]);
-
-    // ---- main "waveform" playhead simulation fallback (drives segment sync if audio is not playing) ----
-    useEffect(() => {
-        if (!isPlaying) {
-            if (mainRafRef.current) cancelAnimationFrame(mainRafRef.current);
-            return;
-        }
-
-        const audio = audioElRef.current;
-        const usingRealAudio = audio && audio.src && !audio.paused && !audio.ended;
-        if (usingRealAudio) {
-            return;
-        }
-
-        mainStartRef.current = performance.now() - playhead * 1000;
-        const tick = () => {
-            const elapsed = (performance.now() - mainStartRef.current) / 1000;
-            if (elapsed >= totalDuration) {
-                setPlayhead(totalDuration);
-                setIsPlaying(false);
-                return;
-            }
-            setPlayhead(elapsed);
-            mainRafRef.current = requestAnimationFrame(tick);
-        };
-        mainRafRef.current = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(mainRafRef.current);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isPlaying, totalDuration]);
-
-    useEffect(() => {
-        if (!data.segments || data.segments.length === 0) return;
-        
-        // Find the active segment, or the most recent one if in a gap
-        let idx = data.segments.findIndex((s) => playhead >= s.start && playhead <= s.end);
-        if (idx === -1) {
-            idx = data.segments.reduce((bestIdx, s, currIdx) => {
-                if (s.start <= playhead) {
-                    return currIdx;
-                }
-                return bestIdx;
-            }, -1);
-        }
-        
+        if (!dataset.segments || dataset.segments.length === 0) return;
+        const idx = dataset.segments.findIndex(s => playhead >= s.start && playhead <= s.end);
         setActiveSegIdx(idx);
-    }, [playhead, data.segments]);
 
-    // Handle scroll alignment separately when activeSegIdx changes
+        // A-B Segment Loop Check
+        if (loopSegment && idx >= 0) {
+            const seg = dataset.segments[idx];
+            if (playhead >= seg.end - 0.05) {
+                seekTo(seg.start);
+            }
+        }
+    }, [playhead, dataset.segments, loopSegment]);
+
+    // Auto-scroll Active Strip into View
     useEffect(() => {
-        if (activeSegIdx >= 0 && segRefs.current[activeSegIdx] && segListRef.current) {
-            const container = segListRef.current;
-            const element = segRefs.current[activeSegIdx];
-            const elemTop = element.offsetTop;
-            
+        if (activeSegIdx >= 0 && stripRefs.current[activeSegIdx] && stripListRef.current) {
+            const container = stripListRef.current;
+            const elem = stripRefs.current[activeSegIdx];
             container.scrollTo({
-                top: elemTop - container.clientHeight / 2 + element.offsetHeight / 2,
+                top: elem.offsetTop - container.clientHeight / 2 + elem.offsetHeight / 2,
                 behavior: 'smooth'
             });
         }
     }, [activeSegIdx]);
 
-    const seekTo = (t) => {
-        setPlayhead(t);
-        const audio = audioElRef.current;
-        if (audio && audio.src) {
-            audio.currentTime = t;
+    // Audio Playback & Seeking
+    const seekTo = (seconds) => {
+        const clamped = Math.max(0, Math.min(seconds, totalDuration));
+        setPlayhead(clamped);
+        if (audioRef.current && audioRef.current.src) {
+            audioRef.current.currentTime = clamped;
         }
-        mainStartRef.current = performance.now() - t * 1000;
     };
 
     const togglePlay = () => {
-        stopChunk();
-
-        const audio = audioElRef.current;
+        const audio = audioRef.current;
         if (!audio) return;
-        
-        const audioSrc = fullVariant === 'denoised' ? data.denoised_full_path_rel : data.filtered_full_path_rel;
-        const audioUrl = audioSrc ? `/${audioSrc}` : '';
-        
-        if (audioUrl && (!audio.src || !audio.src.includes(audioUrl))) {
-            audio.src = audioUrl;
+
+        const relPath = audioChannel === 'denoised' ? dataset.denoised_full_path_rel : dataset.filtered_full_path_rel;
+        const targetUrl = relPath ? `/${relPath}` : '';
+
+        if (targetUrl && (!audio.src || !audio.src.includes(targetUrl))) {
+            audio.src = targetUrl;
             audio.load();
             audio.currentTime = playhead;
         }
@@ -436,1132 +289,1222 @@ export default function ATCConsole() {
             audio.pause();
             setIsPlaying(false);
         } else {
+            audio.playbackRate = playbackRate;
+            audio.volume = isMuted ? 0 : audioVolume;
             audio.play()
                 .then(() => setIsPlaying(true))
-                .catch(e => {
-                    console.error("Playback failed, starting simulation fallback:", e);
+                .catch(() => {
+                    // Fallback simulated progress
                     setIsPlaying(true);
                 });
         }
     };
 
-    // ---- transcription form submission ----
-    const handleTranscribe = async (e) => {
+    // Animation Loop for Playhead & Canvas Spectrogram
+    useEffect(() => {
+        let lastTimestamp = performance.now();
+        const updateFrame = (now) => {
+            const delta = (now - lastTimestamp) / 1000;
+            lastTimestamp = now;
+
+            if (isPlaying) {
+                const audio = audioRef.current;
+                if (audio && audio.src && !audio.paused && !isNaN(audio.currentTime)) {
+                    setPlayhead(audio.currentTime);
+                    if (audio.ended || audio.currentTime >= totalDuration) {
+                        setIsPlaying(false);
+                    }
+                } else {
+                    setPlayhead(prev => {
+                        const next = prev + delta * playbackRate;
+                        if (next >= totalDuration) {
+                            setIsPlaying(false);
+                            return totalDuration;
+                        }
+                        return next;
+                    });
+                }
+            }
+
+            renderCanvas();
+            animRef.current = requestAnimationFrame(updateFrame);
+        };
+
+        animRef.current = requestAnimationFrame(updateFrame);
+        return () => {
+            if (animRef.current) cancelAnimationFrame(animRef.current);
+        };
+    }, [isPlaying, totalDuration, playbackRate, audioChannel]);
+
+    // HTML5 Canvas Waveform & Aviation Spectrogram Drawing
+    const renderCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width = canvas.parentElement?.clientWidth || 800;
+        const height = canvas.height = 90;
+
+        // Background tactical grid
+        ctx.fillStyle = '#060a0f';
+        ctx.fillRect(0, 0, width, height);
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += 22) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        // Draw Transmissions (VAD blocks)
+        if (dataset.segments) {
+            dataset.segments.forEach(seg => {
+                const x1 = (seg.start / totalDuration) * width;
+                const x2 = (seg.end / totalDuration) * width;
+                const isCurrent = playhead >= seg.start && playhead <= seg.end;
+
+                ctx.fillStyle = isCurrent ? 'rgba(0, 240, 255, 0.16)' : 'rgba(16, 185, 129, 0.07)';
+                ctx.fillRect(x1, 0, Math.max(x2 - x1, 2), height);
+
+                ctx.strokeStyle = isCurrent ? '#00f0ff' : 'rgba(16, 185, 129, 0.35)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x1, 0, Math.max(x2 - x1, 2), height);
+            });
+        }
+
+        // Simulated Waveform Bars
+        const barCount = Math.floor(width / 4);
+        const barWidth = 2.5;
+        const midY = height / 2;
+
+        for (let i = 0; i < barCount; i++) {
+            const barSec = (i / barCount) * totalDuration;
+            const inTransmission = (dataset.segments || []).some(s => barSec >= s.start && barSec <= s.end);
+
+            // Pseudo-random acoustic amplitude based on position
+            const noise = Math.sin(i * 0.35) * Math.cos(i * 0.72) * 0.5 + 0.5;
+            let amp = inTransmission ? 12 + noise * 28 : 2 + noise * 4;
+            if (audioChannel === 'filtered') amp *= 1.35; // Show more raw RF noise
+
+            const x = i * 4;
+            const isPast = barSec <= playhead;
+
+            if (isPast) {
+                ctx.fillStyle = inTransmission ? '#00f0ff' : '#334155';
+            } else {
+                ctx.fillStyle = inTransmission ? '#10b981' : '#1e293b';
+            }
+
+            ctx.fillRect(x, midY - amp, barWidth, amp * 2);
+        }
+
+        // Playhead Scrubber Line
+        const playX = (playhead / totalDuration) * width;
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(playX, 0);
+        ctx.lineTo(playX, height);
+        ctx.stroke();
+        ctx.shadowBlur = 0; // reset
+    };
+
+    // Canvas Scrubber Click
+    const handleCanvasClick = (e) => {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const targetSec = (clickX / rect.width) * totalDuration;
+        seekTo(targetSec);
+    };
+
+    // Upload & Transcribe
+    const handleUploadTranscribe = async (e) => {
         e.preventDefault();
         if (!file) return;
 
-        setIsTranscribing(true);
-        setTranscribeError(null);
-        setStatusMessage('Uploading and processing audio file...');
-        
-        if (isPlaying) {
-            audioElRef.current.pause();
-            setIsPlaying(false);
-        }
-        stopChunk();
+        setIsProcessing(true);
+        setProcessError(null);
+        setProcessStatus('Uploading transmission to AirbandScribe DSP pipeline...');
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('apply_noise_removal', applyNoiseRemoval.toString());
-        formData.append('noise_reduction', noiseReduction.toString());
-        formData.append('language', transcribeLang);
-        formData.append('save_intermediate', saveIntermediate.toString());
-        formData.append('device', transcribeDevice);
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('apply_noise_removal', applyDenoise.toString());
+        fd.append('noise_reduction', denoiseCoeff.toString());
+        fd.append('language', 'en');
+        fd.append('save_intermediate', 'true');
+        fd.append('device', computeDevice);
 
         try {
-            const response = await fetch('/transcribe', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.detail || `Server error: ${response.status}`);
+            const res = await fetch('/transcribe', { method: 'POST', body: fd });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || `Server error: ${res.status}`);
             }
-
-            const result = await response.json();
-            
-            if (result && result.segments) {
-                if (!result.text) {
-                    result.text = result.segments.map(s => s.text).join(' ');
-                }
-                
-                // If backend didn't generate intermediate chunks info or it is empty
-                if (!result.intermediate_chunks || result.intermediate_chunks.length === 0) {
-                    const dur = result.speech_duration_seconds;
-                    const chunks = [];
-                    const count = Math.ceil(dur / 25.0);
-                    for (let i = 0; i < count; i++) {
-                        const start = i * 25.0;
-                        if (start >= dur) break;
-                        const chunk_num = i + 1;
-                        const end = Math.min(dur, start + 30.0);
-                        chunks.push({
-                            chunk_num,
-                            start_time: start,
-                            end_time: end,
-                            filtered_path_rel: result.filtered_full_path_rel ? `output/filtered_chunk_${chunk_num}_${result.timestamp}.wav` : null,
-                            denoised_path_rel: result.denoised_full_path_rel ? `output/denoised_chunk_${chunk_num}_${result.timestamp}.wav` : null
-                        });
-                    }
-                    result.intermediate_chunks = chunks;
-                }
-                
-                setDataset(result);
+            const data = await res.json();
+            if (data && data.segments) {
+                if (!data.text) data.text = data.segments.map(s => s.text).join(' ');
+                setDataset(data);
+                setLoadedRecordId(data.id || null);
                 setPlayhead(0);
-                if (result.intermediate_chunks && result.intermediate_chunks.length > 0) {
-                    setSelectedChunk(result.intermediate_chunks[0].chunk_num);
-                }
-                if (result.id) {
-                    setLoadedHistoryId(result.id);
-                }
-                setStatusMessage('Transcription completed successfully.');
-                fetchHistory(1);
-            } else {
-                throw new Error("Invalid response format received from transcription API.");
+                setProcessStatus(`Transcription complete: ${data.segments.length} transmissions decoded.`);
+                loadHistory(1);
             }
         } catch (err) {
-            console.error(err);
-            setTranscribeError(err.message);
-            setStatusMessage('');
+            setProcessError(err.message);
+            setProcessStatus('Transcription failed.');
         } finally {
-            setIsTranscribing(false);
+            setIsProcessing(false);
         }
     };
 
-    // ---- draw a lightweight synthetic waveform + segment markers ----
+    // Export Handlers
+    const exportAsSRT = () => {
+        if (!dataset.segments) return;
+        let srt = '';
+        dataset.segments.forEach((s, idx) => {
+            const startH = Math.floor(s.start / 3600);
+            const startM = Math.floor((s.start % 3600) / 60);
+            const startS = Math.floor(s.start % 60);
+            const startMs = Math.floor((s.start % 1) * 1000);
+
+            const endH = Math.floor(s.end / 3600);
+            const endM = Math.floor((s.end % 3600) / 60);
+            const endS = Math.floor(s.end % 60);
+            const endMs = Math.floor((s.end % 1) * 1000);
+
+            const sFmt = `${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')}:${String(startS).padStart(2,'0')},${String(startMs).padStart(3,'0')}`;
+            const eFmt = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}:${String(endS).padStart(2,'0')},${String(endMs).padStart(3,'0')}`;
+
+            srt += `${idx + 1}\n${sFmt} --> ${eFmt}\n${s.text}\n\n`;
+        });
+        downloadBlob(srt, `${dataset.filename || 'airband'}_transcript.srt`, 'text/plain');
+    };
+
+    const exportAsJSON = () => {
+        const payload = JSON.stringify(dataset, null, 2);
+        downloadBlob(payload, `${dataset.filename || 'airband'}_telemetry.json`, 'application/json');
+    };
+
+    const exportAsTXT = () => {
+        const header = `AIRBANDSCRIBE // AERONAUTICAL DISPATCH TRANSCRIPT\nRECORD: ${dataset.filename}\nDURATION: ${dataset.speech_duration_seconds}s\nZULU RUN: ${dataset.timestamp}\n--------------------------------------------------\n\n`;
+        const body = (dataset.segments || []).map(s => `[${fmtZulu(s.start)} -> ${fmtZulu(s.end)}] ${s.text}`).join('\n');
+        downloadBlob(header + body, `${dataset.filename || 'airband'}_dispatch.txt`, 'text/plain');
+    };
+
+    const downloadBlob = (content, filename, mime) => {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        setProcessStatus('Copied to clipboard.');
+        setTimeout(() => setProcessStatus(''), 2500);
+    };
+
+    // Keyboard Shortcuts
     useEffect(() => {
-        const cvs = canvasRef.current;
-        if (!cvs) return;
-        const dpr = window.devicePixelRatio || 1;
-        const w = cvs.clientWidth, h = cvs.clientHeight;
-        cvs.width = w * dpr; cvs.height = h * dpr;
-        const ctx = cvs.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, w, h);
+        const handleKeyDown = (e) => {
+            if (['input', 'textarea', 'select'].includes(e.target.tagName.toLowerCase())) return;
 
-        // deterministic pseudo-waveform bars
-        const bars = 260;
-        ctx.fillStyle = '#1c2530';
-        for (let i = 0; i < bars; i++) {
-            const seed = Math.sin(i * 12.9898) * 43758.5453;
-            const amp = (Math.abs(seed - Math.floor(seed)) * 0.75 + 0.15);
-            const bh = amp * h * 0.8;
-            const x = (i / bars) * w;
-            ctx.fillRect(x, (h - bh) / 2, w / bars - 1, bh);
-        }
-        // played portion overlay
-        const playedW = (playhead / totalDuration) * w;
-        ctx.fillStyle = '#00ff9c';
-        ctx.globalAlpha = 0.85;
-        ctx.fillRect(0, 0, playedW, h);
-        ctx.globalCompositeOperation = 'source-atop';
-        for (let i = 0; i < bars; i++) {
-            const seed = Math.sin(i * 12.9898) * 43758.5453;
-            const amp = (Math.abs(seed - Math.floor(seed)) * 0.75 + 0.15);
-            const bh = amp * h * 0.8;
-            const x = (i / bars) * w;
-            ctx.fillRect(x, (h - bh) / 2, w / bars - 1, bh);
-        }
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1;
-
-        // playhead line
-        ctx.strokeStyle = '#ffb000';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(playedW, 0); ctx.lineTo(playedW, h);
-        ctx.stroke();
-    }, [playhead, totalDuration]);
-
-    const handleWaveClick = (e) => {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const frac = (e.clientX - rect.left) / rect.width;
-        seekTo(Math.max(0, Math.min(totalDuration, frac * totalDuration)));
-    };
-
-    // ---- chunk audio playback ----
-    const playChunk = () => {
-        if (isPlaying) {
-            audioElRef.current.pause();
-            setIsPlaying(false);
-        }
-
-        const ctx = getCtx();
-        if (ctx.state === 'suspended') ctx.resume();
-        if (chunkSourceRef.current) {
-            try { chunkSourceRef.current.stop(); } catch (e) { }
-        }
-        
-        const chunk = data.intermediate_chunks.find((c) => c.chunk_num === selectedChunk);
-        if (!chunk) return;
-
-        const relPath = chunkVariant === 'denoised' ? chunk.denoised_path_rel : chunk.filtered_path_rel;
-        const url = relPath ? `/${relPath}` : null;
-
-        if (url) {
-            setChunkLoading(true);
-            fetch(url)
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.arrayBuffer();
-                })
-                .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
-                .then(decodedBuffer => {
-                    const currentChunk = data.intermediate_chunks.find((c) => c.chunk_num === selectedChunk);
-                    if (!currentChunk || currentChunk.chunk_num !== chunk.chunk_num) {
-                        setChunkLoading(false);
-                        return;
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    seekTo(playhead - 3);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    seekTo(playhead + 3);
+                    break;
+                case 'KeyR':
+                    e.preventDefault();
+                    if (activeSegIdx >= 0 && dataset.segments) {
+                        seekTo(dataset.segments[activeSegIdx].start);
                     }
-                    
-                    if (chunkSourceRef.current) {
-                        try { chunkSourceRef.current.stop(); } catch (e) { }
-                    }
-                    const src = ctx.createBufferSource();
-                    src.buffer = decodedBuffer;
-                    src.connect(ctx.destination);
-                    src.onended = () => setChunkPlaying(false);
-                    src.start();
-                    chunkSourceRef.current = src;
-                    setChunkPlaying(true);
-                    setChunkLoading(false);
-                })
-                .catch(err => {
-                    console.error("Error playing real chunk audio, falling back to synthetic tone:", err);
-                    setChunkLoading(false);
-                    const dur = chunk.end_time - chunk.start_time;
-                    const buf = generateChunkBuffer(ctx, chunk.chunk_num, chunkVariant, dur);
-                    const src = ctx.createBufferSource();
-                    src.buffer = buf;
-                    src.connect(ctx.destination);
-                    src.onended = () => setChunkPlaying(false);
-                    src.start();
-                    chunkSourceRef.current = src;
-                    setChunkPlaying(true);
-                });
-        } else {
-            const dur = chunk.end_time - chunk.start_time;
-            const buf = generateChunkBuffer(ctx, chunk.chunk_num, chunkVariant, dur);
-            const src = ctx.createBufferSource();
-            src.buffer = buf;
-            src.connect(ctx.destination);
-            src.onended = () => setChunkPlaying(false);
-            src.start();
-            chunkSourceRef.current = src;
-            setChunkPlaying(true);
-        }
-    };
+                    break;
+                case 'KeyD':
+                    e.preventDefault();
+                    setAudioChannel(prev => prev === 'denoised' ? 'filtered' : 'denoised');
+                    break;
+                case 'KeyM':
+                    e.preventDefault();
+                    setIsMuted(prev => !prev);
+                    break;
+                default:
+                    break;
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [playhead, activeSegIdx, dataset.segments, isPlaying, audioChannel, isMuted]);
 
-    const stopChunk = () => {
-        if (chunkSourceRef.current) {
-            try { chunkSourceRef.current.stop(); } catch (e) { }
-        }
-        setChunkPlaying(false);
-    };
-
-    useEffect(() => stopChunk, [selectedChunk, chunkVariant]); // eslint-disable-line
-
-    const selectedChunkData = data.intermediate_chunks.find((c) => c.chunk_num === selectedChunk);
+    // Filtered Transmission Segments
+    const visibleSegments = useMemo(() => {
+        if (!dataset.segments) return [];
+        if (!searchFilter.trim()) return dataset.segments;
+        const q = searchFilter.toLowerCase();
+        return dataset.segments.filter(s => s.text.toLowerCase().includes(q));
+    }, [dataset.segments, searchFilter]);
 
     return (
-        <div className="atc-root" style={styles.root}>
+        <div style={styles.consoleContainer}>
+            {/* Embedded Avionics Styles */}
             <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        .tok-verb { color: #ffb000; font-weight: 600; }
-        .tok-runway { color: #00ff9c; font-weight: 700; background: rgba(0,255,156,0.08); border-radius: 3px; padding: 0 2px; }
-        .tok-alt { color: #6fd3ff; font-weight: 600; }
-        .tok-heading { color: #ff8a65; font-weight: 600; }
-        .tok-nav { color: #d9a8ff; font-weight: 600; }
-        .seg-row:hover { background: #131a22 !important; }
-        .btn { cursor: pointer; }
-        .submit-btn:hover { background: #00e58b !important; box-shadow: 0 0 18px rgba(0,255,156,0.3) !important; transform: translateY(-1px); }
-        .submit-btn:active { background: #00cc7c !important; transform: translateY(0); }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0e12; }
-        ::-webkit-scrollbar-thumb { background: #2a3644; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3a4a5a; }
+                .tok-verb { color: #f59e0b; font-weight: 600; }
+                .tok-runway { color: #10b981; font-weight: 700; background: rgba(16,185,129,0.12); padding: 1px 4px; border-radius: 3px; border: 1px solid rgba(16,185,129,0.3); }
+                .tok-alt { color: #38bdf8; font-weight: 600; }
+                .tok-heading { color: #fb923c; font-weight: 600; }
+                .tok-nav { color: #c084fc; font-weight: 600; }
+                .tok-freq { color: #ec4899; font-weight: 600; }
+                .tok-callsign { color: #facc15; font-weight: 700; }
 
-        /* Panel hover glow + pop */
-        .atc-panel {
-            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
-        }
-        .atc-panel:hover {
-            border-color: #1f3040;
-            box-shadow: 0 0 20px rgba(0,255,156,0.04), 0 4px 16px rgba(0,0,0,0.3);
-            transform: translateY(-1px);
-        }
+                .avionics-card {
+                    background: #0b1118;
+                    border: 1px solid #162232;
+                    border-radius: 6px;
+                    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+                }
+                .avionics-card:hover {
+                    border-color: #233750;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                }
 
-        /* Stat chip hover */
-        .stat-chip {
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-        }
-        .stat-chip:hover {
-            border-color: #00ff9c44;
-            box-shadow: 0 0 12px rgba(0,255,156,0.08);
-            transform: translateY(-1px) scale(1.02);
-        }
+                .strip-row {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    padding: 9px 12px;
+                    border-bottom: 1px solid #121c28;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                }
+                .strip-row:hover {
+                    background: #0f1823 !important;
+                }
+                .strip-active {
+                    background: rgba(0, 240, 255, 0.05) !important;
+                    border-left: 3px solid #00f0ff !important;
+                }
 
-        /* Mini stat hover */
-        .mini-stat {
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-        }
-        .mini-stat:hover {
-            border-color: #ffb00030;
-            box-shadow: 0 0 14px rgba(255,176,0,0.06);
-            transform: translateY(-1px);
-        }
+                .btn-tactical {
+                    background: #111a26;
+                    border: 1px solid #1e2e42;
+                    color: #94a3b8;
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 11px;
+                    font-weight: 500;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                }
+                .btn-tactical:hover {
+                    background: #192638;
+                    color: #f1f5f9;
+                    border-color: #3b82f6;
+                }
+                .btn-tactical.active {
+                    background: #00f0ff;
+                    color: #06090e;
+                    border-color: #00f0ff;
+                    font-weight: 700;
+                }
 
-        /* Play button hover */
-        .btn:hover {
-            border-color: #3a4a5a !important;
-            box-shadow: 0 0 10px rgba(0,255,156,0.06);
-        }
+                .history-item {
+                    padding: 8px 10px;
+                    border-bottom: 1px solid #14202e;
+                    cursor: pointer;
+                    transition: background 0.15s ease;
+                }
+                .history-item:hover {
+                    background: #101a26;
+                }
+                .history-item.active {
+                    background: rgba(16, 185, 129, 0.08);
+                    border-left: 2px solid #10b981;
+                }
 
-        /* Select hover */
-        select:hover {
-            border-color: #3a4a5a !important;
-        }
-        select:focus {
-            border-color: #00ff9c44 !important;
-            outline: none;
-            box-shadow: 0 0 8px rgba(0,255,156,0.08);
-        }
+                ::-webkit-scrollbar { width: 6px; height: 6px; }
+                ::-webkit-scrollbar-track { background: #070c12; }
+                ::-webkit-scrollbar-thumb { background: #1c2b3e; border-radius: 3px; }
+                ::-webkit-scrollbar-thumb:hover { background: #2d4463; }
+            `}</style>
 
-        /* Segment row active glow */
-        .seg-row.seg-active {
-            background: rgba(0,255,156,0.04) !important;
-            border-left: 2px solid #00ff9c;
-        }
-
-        /* History row states */
-        .history-row:hover {
-            background: #131a22 !important;
-            border-color: #2a3644 !important;
-        }
-        .history-row.history-active {
-            background: rgba(0,255,156,0.03) !important;
-            border-color: #00ff9c !important;
-        }
-
-        /* Active segment HUD subtle pulse */
-        @keyframes hudPulse {
-            0%, 100% { border-color: #1a232d; }
-            50% { border-color: #1f3040; }
-        }
-        .hud-active {
-            animation: hudPulse 3s ease-in-out infinite;
-        }
-
-        /* Logo mark hover */
-        .logo-mark {
-            transition: box-shadow 0.25s ease, transform 0.2s ease;
-        }
-        .logo-mark:hover {
-            box-shadow: 0 0 16px rgba(0,255,156,0.15);
-            transform: scale(1.05);
-        }
-
-        /* Background ATC watermark */
-        .atc-root::before {
-            content: 'ATC';
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 28vw;
-            font-weight: 900;
-            color: rgba(255,255,255,0.012);
-            pointer-events: none;
-            z-index: 0;
-            letter-spacing: 0.05em;
-            user-select: none;
-        }
-        .atc-root > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Classification banner */
-        .classification-bar {
-            text-align: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: #ffb000;
-            padding: 5px 0;
-            border-bottom: 1px solid #1a232d;
-            opacity: 0.7;
-        }
-
-        /* Header designation code blink */
-        @keyframes opBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-        .op-status-dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #00ff9c;
-            animation: opBlink 2s ease-in-out infinite;
-            margin-right: 6px;
-            vertical-align: middle;
-        }
-      `}</style>
-
-            {/* Classification Banner */}
-            <div className="classification-bar">Ground Station Operations — Authorised Personnel Only</div>
-
-            {/* Header */}
-            <div style={styles.header}>
-                <div style={styles.headerLeft}>
-                    <div className="logo-mark" style={styles.logoMark}>
-                        <div style={{ fontSize: 8, letterSpacing: 2, color: '#5f6f80', marginBottom: 2 }}>SYS</div>
-                        <div>ATC</div>
+            {/* TOP NAVIGATION / TELEMETRY DECK */}
+            <header style={styles.topBar}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={styles.radarBeacon}>
+                        <div style={styles.radarDot} />
                     </div>
                     <div>
-                        <div style={styles.title}>
-                            <span style={{ color: '#5f6f80', fontWeight: 400, fontSize: 13, fontFamily: mono, letterSpacing: 1.5, display: 'block', marginBottom: 2 }}>ASR-FOR-ATC</span>
-                            Air Traffic Control <span style={{ color: '#00ff9c' }}>Intelligence</span> Console
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={styles.brandTitle}>AIRBAND<span style={{ color: '#00f0ff' }}>SCRIBE</span></span>
+                            <span style={styles.versionTag}>v1.2.0-STARS</span>
                         </div>
-                        <div style={styles.subtitle}>
-                            <span className="op-status-dot"></span>
-                            operational · real-time voice comms transcription & analysis
-                        </div>
+                        <span style={styles.brandSub}>AERONAUTICAL VHF SPEECH SIGNAL INTELLIGENCE CONSOLE</span>
                     </div>
                 </div>
-                <div style={styles.headerStats}>
-                    <StatChip label="device" value={(data.device || 'cuda').toUpperCase()} accent={data.device !== 'cpu'} />
-                    <StatChip label="lang" value={data.language.toUpperCase()} />
-                    <StatChip label="vad" value={data.vad_enabled ? 'on' : 'off'} accent={data.vad_enabled} />
-                    <StatChip label="noise removal" value={data.noise_removal_enabled ? 'on' : 'off'} accent={data.noise_removal_enabled} />
-                    <StatChip label="speedup" value={`${speedup}x`} accent />
-                </div>
-            </div>
 
-            {/* Processing stats bar */}
-            <div style={styles.statsBar}>
-                <MiniStat label="speech duration" value={fmtTime(data.speech_duration_seconds)} />
-                <MiniStat label="processing time" value={`${data.processing_time_seconds.toFixed(2)}s`} />
-                <MiniStat label="segments" value={data.segments ? data.segments.length : 0} />
-                <MiniStat label="run timestamp" value={data.timestamp} />
-            </div>
-
-            {/* Top Grid: Transcribe Panel + History Panel */}
-            <div style={styles.topGrid}>
-                {/* Transcribe Panel */}
-                <div className="atc-panel" style={styles.panel}>
-                    <div style={styles.panelHeadRow}>
-                        <span style={styles.panelLabel}>Transcribe New Audio File</span>
-                        {isTranscribing && <span style={styles.loaderSpinner}>Processing...</span>}
+                {/* Telemetry Live Bar */}
+                <div style={styles.telemetryGroup}>
+                    <div style={styles.telemetryPill}>
+                        <span style={styles.pillLabel}>ZULU UTC</span>
+                        <span style={{ ...styles.pillVal, color: '#f59e0b' }}>{zuluTime || '00:00:00Z'}</span>
                     </div>
-                    <form onSubmit={handleTranscribe} style={styles.formRow}>
-                        <div style={styles.formField}>
-                            <label style={styles.fieldLabel}>Audio File</label>
-                            <input
-                                type="file"
-                                accept="audio/*"
-                                onChange={(e) => setFile(e.target.files[0])}
-                                style={styles.fileInput}
-                                required
-                            />
-                        </div>
-                        <div style={{ ...styles.formField, height: 50, justifyContent: 'flex-end', paddingBottom: 8 }}>
-                            <span style={styles.plainLangText}>Language = English</span>
-                        </div>
-                        <div style={styles.formField}>
-                            <label style={styles.fieldLabel}>Compute Device</label>
-                            <select
-                                value={transcribeDevice}
-                                onChange={(e) => setTranscribeDevice(e.target.value)}
-                                style={styles.select}
-                            >
-                                <option value="cuda">CUDA (GPU)</option>
-                                <option value="cpu">CPU (Lightweight)</option>
-                            </select>
-                        </div>
-                        <div style={styles.formField}>
-                            <label style={styles.fieldLabel}>Noise Removal</label>
-                            <div style={styles.checkboxContainer}>
-                                <input
-                                    type="checkbox"
-                                    checked={applyNoiseRemoval}
-                                    onChange={(e) => setApplyNoiseRemoval(e.target.checked)}
-                                    style={styles.checkbox}
-                                    id="applyNoiseRemoval"
-                                />
-                                <label htmlFor="applyNoiseRemoval" style={styles.checkboxLabel}>Enable</label>
-                            </div>
-                        </div>
-                        <div style={styles.formField}>
-                            <label style={styles.fieldLabel}>Noise Red. Coeff.</label>
-                            <input
-                                type="number"
-                                min="0.0"
-                                max="1.0"
-                                step="0.05"
-                                value={noiseReduction}
-                                onChange={(e) => setNoiseReduction(parseFloat(e.target.value))}
-                                style={styles.numberInput}
-                                disabled={!applyNoiseRemoval}
-                            />
-                        </div>
-                        <div style={styles.formField}>
-                            <label style={styles.fieldLabel}>Save Chunks</label>
-                            <div style={styles.checkboxContainer}>
-                                <input
-                                    type="checkbox"
-                                    checked={saveIntermediate}
-                                    onChange={(e) => setSaveIntermediate(e.target.checked)}
-                                    style={styles.checkbox}
-                                    id="saveIntermediate"
-                                />
-                                <label htmlFor="saveIntermediate" style={styles.checkboxLabel}>Enable</label>
-                            </div>
-                        </div>
-                        <button
-                            type="submit"
-                            className="btn submit-btn"
-                            disabled={isTranscribing || !file}
-                            style={{
-                                ...styles.submitBtn,
-                                opacity: (isTranscribing || !file) ? 0.6 : 1,
-                                cursor: (isTranscribing || !file) ? 'not-allowed' : 'pointer'
-                            }}
-                        >
-                            {isTranscribing ? 'Transcribing...' : 'Upload & Transcribe'}
-                        </button>
-                    </form>
-                    {statusMessage && <div style={styles.statusMsg}>{statusMessage}</div>}
-                    {transcribeError && <div style={styles.errorMsg}>Error: {transcribeError}</div>}
+                    <div style={styles.telemetryPill}>
+                        <span style={styles.pillLabel}>AIRBAND FREQ</span>
+                        <span style={styles.pillVal}>118.000–136.975 MHz</span>
+                    </div>
+                    <div style={styles.telemetryPill}>
+                        <span style={styles.pillLabel}>DSP ENGINE</span>
+                        <span style={{ ...styles.pillVal, color: '#10b981' }}>BUTTERWORTH 5P + NOISEREDUCE</span>
+                    </div>
+                    <div style={styles.telemetryPill}>
+                        <span style={styles.pillLabel}>COMPUTE DEVICE</span>
+                        <span style={{ ...styles.pillVal, color: dataset.device === 'cuda' ? '#10b981' : '#38bdf8' }}>
+                            {dataset.device ? dataset.device.toUpperCase() : 'CPU (AVX2)'}
+                        </span>
+                    </div>
+                    <div style={styles.telemetryPill}>
+                        <span style={styles.pillLabel}>RTF SPEEDUP</span>
+                        <span style={{ ...styles.pillVal, color: '#00f0ff' }}>{speedup}x</span>
+                    </div>
                 </div>
+            </header>
 
-                {/* Transcription History Panel */}
-                <div className="atc-panel" style={{ ...styles.panel, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                        <div style={styles.panelHeadRow}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={styles.panelLabel}>Transcription History</span>
-                                <button
-                                    type="button"
-                                    onClick={() => fetchHistory(historyPage)}
-                                    title="Refresh History"
-                                    style={{
-                                        background: 'transparent',
-                                        border: '1px solid #1a232d',
-                                        color: '#5f6f80',
-                                        cursor: 'pointer',
-                                        borderRadius: 3,
-                                        fontSize: 11,
-                                        padding: '2px 6px',
-                                        fontFamily: mono
-                                    }}
-                                >↻</button>
-                            </div>
-                            {historyLoading && <span style={styles.loaderSpinner}>Loading...</span>}
+            {/* MAIN OPERATIONAL DECK */}
+            <main style={styles.mainContent}>
+                {/* TOP ROW: INGESTION + ATC ENTITY MATRIX */}
+                <div style={styles.topRowGrid}>
+                    {/* INGESTION & DSP CONTROLS */}
+                    <div className="avionics-card" style={{ padding: 14 }}>
+                        <div style={styles.sectionHeader}>
+                            <span style={styles.sectionTitle}>TRANSMISSION INGESTION & DSP PIPELINE</span>
+                            {isProcessing && <span style={styles.pulseActive}>PROCESSING AUDIO...</span>}
                         </div>
-                        
-                        <div style={styles.historyList}>
-                            {historyList.length === 0 ? (
-                                <div style={styles.historyEmpty}>No previous transcriptions found.</div>
-                            ) : (
-                                historyList.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        onClick={() => loadHistoryItem(item.id)}
-                                        className={`history-row ${item.id === loadedHistoryId ? 'history-active' : ''}`}
+
+                        <form onSubmit={handleUploadTranscribe} style={styles.ingestForm}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 10 }}>
+                                <div>
+                                    <label style={styles.inputLabel}>VHF AUDIO STREAM (.WAV / .MP3)</label>
+                                    <input
+                                        type="file"
+                                        accept="audio/*"
+                                        onChange={(e) => setFile(e.target.files[0])}
+                                        style={styles.fileInput}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label style={styles.inputLabel}>INFERENCE DEVICE</label>
+                                    <select
+                                        value={computeDevice}
+                                        onChange={(e) => setComputeDevice(e.target.value)}
+                                        style={styles.selectInput}
                                     >
-                                        <div style={styles.historyRowTop}>
-                                            <span style={styles.historyFilename} title={item.filename}>{item.filename}</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                <span style={styles.historyTime}>{fmtTime(item.speech_duration_seconds)}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => handleDeleteHistory(e, item.id)}
-                                                    title="Delete Record"
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: 'none',
-                                                        color: '#ff5c5c',
-                                                        cursor: 'pointer',
-                                                        fontSize: 13,
-                                                        padding: '0 2px'
-                                                    }}
-                                                >×</button>
-                                            </div>
-                                        </div>
-                                        <div style={styles.historyRowBottom}>
-                                            <span style={styles.historyTimestamp}>
-                                                {item.created_at ? item.created_at.split(' ')[0] : (item.timestamp || 'unknown')}
-                                            </span>
-                                            <span style={styles.historyMeta}>
-                                                device: <span style={{ color: item.device === 'cpu' ? '#ffb000' : '#00ff9c' }}>{item.device}</span>
-                                            </span>
-                                        </div>
+                                        <option value="cpu">CPU (Intel AVX2 SIMD)</option>
+                                        <option value="cuda">CUDA (NVIDIA TensorRT)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={styles.inputLabel}>SPECTRAL NOISE GATE</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 32 }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={applyDenoise}
+                                            onChange={(e) => setApplyDenoise(e.target.checked)}
+                                            id="denoiseCheck"
+                                        />
+                                        <label htmlFor="denoiseCheck" style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: '#94a3b8' }}>
+                                            Filter ({denoiseCoeff * 100}%)
+                                        </label>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
+                                </div>
+                            </div>
 
-                    {/* Pagination Controls */}
-                    {historyTotalPages > 1 && (
-                        <div style={styles.historyPagination}>
-                            <button
-                                type="button"
-                                className="btn"
-                                onClick={() => fetchHistory(historyPage - 1)}
-                                disabled={historyPage <= 1}
-                                style={{ ...styles.paginationBtn, opacity: historyPage <= 1 ? 0.4 : 1 }}
-                            >
-                                ◀ Prev
-                            </button>
-                            <span style={styles.paginationText}>
-                                {historyPage} / {historyTotalPages}
-                            </span>
-                            <button
-                                type="button"
-                                className="btn"
-                                onClick={() => fetchHistory(historyPage + 1)}
-                                disabled={historyPage >= historyTotalPages}
-                                style={{ ...styles.paginationBtn, opacity: historyPage >= historyTotalPages ? 0.4 : 1 }}
-                            >
-                                Next ▶
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Waveform + transport */}
-            <div className="atc-panel" style={styles.panel}>
-                <div style={styles.panelHeadRow}>
-                    <span style={styles.panelLabel}>audio timeline</span>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                        <div style={styles.toggleGroup}>
-                            <button
-                                className="btn"
-                                onClick={() => setFullVariant('filtered')}
-                                style={{ ...styles.toggleBtn, ...(fullVariant === 'filtered' ? styles.toggleBtnActive : {}) }}
-                            >filtered</button>
-                            <button
-                                className="btn"
-                                onClick={() => setFullVariant('denoised')}
-                                style={{ ...styles.toggleBtn, ...(fullVariant === 'denoised' ? styles.toggleBtnActive : {}) }}
-                            >denoised</button>
-                        </div>
-                        <span style={styles.timecode}>{fmtTime(playhead)} / {fmtTime(totalDuration)}</span>
-                        <button className="btn" onClick={togglePlay} style={styles.playBtn}>
-                            {isPlaying ? '⏸ pause' : '▶ play'}
-                        </button>
-                    </div>
-                </div>
-                <canvas
-                    ref={canvasRef}
-                    onClick={handleWaveClick}
-                    style={styles.waveCanvas}
-                />
-
-                {/* Active Segment HUD / Subtitles */}
-                <div className={activeSegIdx >= 0 ? 'hud-active' : ''} style={styles.activeSegmentHud}>
-                    {activeSegIdx >= 0 && data.segments && data.segments[activeSegIdx] ? (
-                        <div style={styles.activeSegmentContent}>
-                            <span style={styles.hudTimecode}>
-                                [{fmtTime(data.segments[activeSegIdx].start)} - {fmtTime(data.segments[activeSegIdx].end)}]
-                            </span>
-                            <span style={styles.hudText}>
-                                {tagText(data.segments[activeSegIdx].text).map((n, i) => n.cls
-                                    ? <span key={i} className={n.cls}>{n.t}</span>
-                                    : <span key={i}>{n.t}</span>)}
-                            </span>
-                        </div>
-                    ) : (
-                        <div style={styles.hudPlaceholder}>[ No active transmission at current timecode ]</div>
-                    )}
-                </div>
-            </div>
-
-            {/* Two-column: transcript + chunk pipeline */}
-            <div style={styles.mainGrid}>
-                {/* Transcript */}
-                <div className="atc-panel" style={styles.panel}>
-                    <div style={styles.panelHeadRow}>
-                        <span style={styles.panelLabel}>transcript</span>
-                        <div style={styles.toggleGroup}>
-                            <button
-                                className="btn"
-                                onClick={() => setViewMode('segments')}
-                                style={{ ...styles.toggleBtn, ...(viewMode === 'segments' ? styles.toggleBtnActive : {}) }}
-                            >segments</button>
-                            <button
-                                className="btn"
-                                onClick={() => setViewMode('full')}
-                                style={{ ...styles.toggleBtn, ...(viewMode === 'full' ? styles.toggleBtnActive : {}) }}
-                            >full text</button>
-                        </div>
-                    </div>
-
-                    {viewMode === 'segments' ? (
-                        <div ref={segListRef} style={styles.segList}>
-                            {data.segments.map((seg, idx) => (
-                                <div
-                                    key={idx}
-                                    ref={(el) => (segRefs.current[idx] = el)}
-                                    className={`seg-row ${idx === activeSegIdx ? 'seg-active' : ''}`}
-                                    onClick={() => seekTo(seg.start)}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                                <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'JetBrains Mono' }}>
+                                    Bandpass: 100Hz–8000Hz | Silero VAD v6.2 | Hotwords: ICAO phraseology
+                                </span>
+                                <button
+                                    type="submit"
+                                    disabled={isProcessing || !file}
                                     style={{
-                                        ...styles.segRow,
-                                        background: idx === activeSegIdx ? 'rgba(0,255,156,0.04)' : 'transparent',
+                                        ...styles.actionSubmitBtn,
+                                        opacity: isProcessing || !file ? 0.5 : 1,
+                                        cursor: isProcessing || !file ? 'not-allowed' : 'pointer'
                                     }}
                                 >
-                                    <span style={styles.segTime}>{fmtTime(seg.start)}</span>
-                                    <span style={styles.segText}>
-                                        {tagText(seg.text).map((n, i) => n.cls
-                                            ? <span key={i} className={n.cls}>{n.t}</span>
-                                            : <span key={i}>{n.t}</span>)}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div style={styles.fullText}>
-                            {tagText(data.text).map((n, i) => n.cls
-                                ? <span key={i} className={n.cls}>{n.t}</span>
-                                : <span key={i}>{n.t}</span>)}
-                        </div>
-                    )}
+                                    {isProcessing ? 'PROCESSING DSP...' : 'INGEST & TRANSCRIBE VHF'}
+                                </button>
+                            </div>
+                        </form>
 
-                    <div style={styles.legend}>
-                        <LegendItem cls="tok-verb" label="clearance / instruction" />
-                        <LegendItem cls="tok-runway" label="runway" />
-                        <LegendItem cls="tok-alt" label="altitude" />
-                        <LegendItem cls="tok-heading" label="heading" />
-                        <LegendItem cls="tok-nav" label="nav aid" />
+                        {processStatus && <div style={styles.statusBarNotice}>{processStatus}</div>}
+                        {processError && <div style={styles.errorNotice}>ERROR: {processError}</div>}
+                    </div>
+
+                    {/* ATC FLIGHT ENTITY MATRIX */}
+                    <div className="avionics-card" style={{ padding: 14 }}>
+                        <div style={styles.sectionHeader}>
+                            <span style={styles.sectionTitle}>EXTRACTED AVIATION TELEMETRY</span>
+                            <span style={{ fontSize: 10, color: '#64748b', fontFamily: 'JetBrains Mono' }}>ICAO PARSER</span>
+                        </div>
+
+                        <div style={styles.entityMatrixGrid}>
+                            <div style={styles.entityCard}>
+                                <div style={styles.entityHeader}>✈️ CALLSIGNS</div>
+                                <div style={styles.entityPillContainer}>
+                                    {extractedEntities.callsigns.length > 0 ? (
+                                        extractedEntities.callsigns.map((c, i) => (
+                                            <span key={i} className="tok-callsign" style={styles.entityChip}>{c}</span>
+                                        ))
+                                    ) : (
+                                        <span style={styles.emptyNote}>No callsign logged</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={styles.entityCard}>
+                                <div style={styles.entityHeader}>🛫 RUNWAYS</div>
+                                <div style={styles.entityPillContainer}>
+                                    {extractedEntities.runways.length > 0 ? (
+                                        extractedEntities.runways.map((r, i) => (
+                                            <span key={i} className="tok-runway" style={styles.entityChip}>{r}</span>
+                                        ))
+                                    ) : (
+                                        <span style={styles.emptyNote}>No active runways</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={styles.entityCard}>
+                                <div style={styles.entityHeader}>🧭 HEADINGS</div>
+                                <div style={styles.entityPillContainer}>
+                                    {extractedEntities.headings.length > 0 ? (
+                                        extractedEntities.headings.map((h, i) => (
+                                            <span key={i} className="tok-heading" style={styles.entityChip}>{h}</span>
+                                        ))
+                                    ) : (
+                                        <span style={styles.emptyNote}>No vector headings</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={styles.entityCard}>
+                                <div style={styles.entityHeader}>⛰️ ALTITUDES / FL</div>
+                                <div style={styles.entityPillContainer}>
+                                    {extractedEntities.altitudes.length > 0 ? (
+                                        extractedEntities.altitudes.map((a, i) => (
+                                            <span key={i} className="tok-alt" style={styles.entityChip}>{a}</span>
+                                        ))
+                                    ) : (
+                                        <span style={styles.emptyNote}>No altitude targets</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Chunk pipeline */}
-                <div className="atc-panel" style={styles.panel}>
-                    <div style={styles.panelHeadRow}>
-                        <span style={styles.panelLabel}>intermediate audio pipeline</span>
-                        <span style={styles.chunkCount}>{data.intermediate_chunks.length} chunks</span>
-                    </div>
+                {/* MIDDLE ROW: INTERACTIVE WAVEFORM & FLIGHT RECORDER SCRUBBER */}
+                <div className="avionics-card" style={{ padding: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <span style={styles.sectionTitle}>TIME-DOMAIN WAVEFORM & SPECTRAL ENERGY</span>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                                <button
+                                    onClick={() => setAudioChannel('denoised')}
+                                    className={`btn-tactical ${audioChannel === 'denoised' ? 'active' : ''}`}
+                                >
+                                    CLEANED VHF
+                                </button>
+                                <button
+                                    onClick={() => setAudioChannel('filtered')}
+                                    className={`btn-tactical ${audioChannel === 'filtered' ? 'active' : ''}`}
+                                >
+                                    BANDPASS RAW
+                                </button>
+                            </div>
+                        </div>
 
-                    <div style={styles.chunkControls}>
-                        <label style={styles.fieldLabel}>chunk</label>
-                        <select
-                            value={selectedChunk}
-                            onChange={(e) => setSelectedChunk(Number(e.target.value))}
-                            style={styles.select}
-                        >
-                            {data.intermediate_chunks.map((c) => (
-                                <option key={c.chunk_num} value={c.chunk_num}>
-                                    chunk {c.chunk_num} · {fmtTime(c.start_time)}–{fmtTime(c.end_time)}
-                                </option>
-                            ))}
-                        </select>
+                        {/* Transport Controls */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={styles.timecodeDisplay}>
+                                {fmtZulu(playhead)} / {fmtZulu(totalDuration)}
+                            </span>
 
-                        <label style={styles.fieldLabel}>variant</label>
-                        <select
-                            value={chunkVariant}
-                            onChange={(e) => setChunkVariant(e.target.value)}
-                            style={styles.select}
-                        >
-                            <option value="filtered">filtered</option>
-                            <option value="denoised">denoised</option>
-                        </select>
-
-                        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                             <button
-                                className="btn"
-                                onClick={chunkPlaying ? stopChunk : playChunk}
-                                disabled={chunkLoading}
-                                style={{ ...styles.playBtn, flex: 1 }}
+                                onClick={() => setLoopSegment(prev => !prev)}
+                                className={`btn-tactical ${loopSegment ? 'active' : ''}`}
+                                title="Loop Active Segment (A-B Repeat)"
                             >
-                                {chunkLoading ? '⏳ loading...' : chunkPlaying ? '⏹ stop' : '▶ play chunk'}
+                                ⟲ LOOP
+                            </button>
+
+                            <select
+                                value={playbackRate}
+                                onChange={(e) => {
+                                    const r = parseFloat(e.target.value);
+                                    setPlaybackRate(r);
+                                    if (audioRef.current) audioRef.current.playbackRate = r;
+                                }}
+                                style={styles.rateSelect}
+                            >
+                                <option value="0.75">0.75x</option>
+                                <option value="1.0">1.0x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                            </select>
+
+                            <button onClick={togglePlay} style={styles.playMasterBtn}>
+                                {isPlaying ? '⏸ PAUSE' : '▶ PLAY'}
                             </button>
                         </div>
                     </div>
 
-                    {selectedChunkData && (
-                        <div style={styles.chunkMeta}>
-                            <div style={styles.chunkMetaRow}>
-                                <span style={styles.metaKey}>window</span>
-                                <span style={styles.metaVal}>{fmtTime(selectedChunkData.start_time)} → {fmtTime(selectedChunkData.end_time)}</span>
-                            </div>
-                            <div style={styles.chunkMetaRow}>
-                                <span style={styles.metaKey}>span</span>
-                                <span style={styles.metaVal}>{(selectedChunkData.end_time - selectedChunkData.start_time).toFixed(0)}s</span>
-                            </div>
-                            <div style={styles.chunkMetaRow}>
-                                <span style={styles.metaKey}>variant</span>
-                                <span style={{ ...styles.metaVal, color: chunkVariant === 'denoised' ? '#00ff9c' : '#ffb000' }}>
-                                    {chunkVariant}
+                    {/* Canvas Scrubber */}
+                    <div style={{ position: 'relative', cursor: 'crosshair' }} onClick={handleCanvasClick}>
+                        <canvas ref={canvasRef} style={{ width: '100%', height: 90, display: 'block', borderRadius: 4 }} />
+                    </div>
+
+                    {/* Active Transmission HUD Subtitle */}
+                    <div style={styles.transmissionHud}>
+                        {activeSegIdx >= 0 && dataset.segments && dataset.segments[activeSegIdx] ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <span style={styles.hudBadge}>
+                                    TRANSMISSION #{activeSegIdx + 1} [{fmtZulu(dataset.segments[activeSegIdx].start)} - {fmtZulu(dataset.segments[activeSegIdx].end)}]
+                                </span>
+                                <span style={styles.hudTransmissionText}>
+                                    {tagAviationText(dataset.segments[activeSegIdx].text).map((tok, i) => (
+                                        tok.cls ? <span key={i} className={tok.cls}>{tok.t}</span> : <span key={i}>{tok.t}</span>
+                                    ))}
                                 </span>
                             </div>
-                        </div>
-                    )}
-
+                        ) : (
+                            <span style={styles.hudIdle}>[ STANDBY // LISTENING FOR VHF AIRBAND TRANSMISSION ]</span>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            <div style={styles.footer}>
-                note — this build automatically plays the real audio files (denoised and filtered) served from 
-                the backend output directory when available, and falls back to synthesized placeholder audio 
-                for preview if the server files are offline.
-            </div>
+                {/* BOTTOM ROW: FLIGHT PROGRESS STRIPS (TRANSCRIPT) & LOGBOOK DRAWER */}
+                <div style={styles.bottomRowGrid}>
+                    {/* FLIGHT PROGRESS STRIPS (LEFT PANEL) */}
+                    <div className="avionics-card" style={{ padding: 14, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={styles.sectionTitle}>FLIGHT PROGRESS STRIPS</span>
+                                <span style={styles.countBadge}>
+                                    {visibleSegments.length} / {dataset.segments ? dataset.segments.length : 0} TRANSMISSIONS
+                                </span>
+                            </div>
+
+                            {/* View Mode & Export Suite */}
+                            <div style={{ display: 'flex', gap: 6 }}>
+                                <input
+                                    type="text"
+                                    placeholder="Filter callsign / runway..."
+                                    value={searchFilter}
+                                    onChange={(e) => setSearchFilter(e.target.value)}
+                                    style={styles.searchInput}
+                                />
+                                <button onClick={exportAsSRT} className="btn-tactical" title="Export SubRip Subtitles">
+                                    .SRT
+                                </button>
+                                <button onClick={exportAsJSON} className="btn-tactical" title="Export ICAO Telemetry JSON">
+                                    .JSON
+                                </button>
+                                <button onClick={exportAsTXT} className="btn-tactical" title="Export Plain Text Dispatch">
+                                    .TXT
+                                </button>
+                                <button
+                                    onClick={() => copyToClipboard(dataset.text || '')}
+                                    className="btn-tactical"
+                                    title="Copy Clean Transcript"
+                                >
+                                    COPY
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Strip Container */}
+                        <div ref={stripListRef} style={styles.stripListScroll}>
+                            {visibleSegments.length > 0 ? (
+                                visibleSegments.map((seg, idx) => {
+                                    const isActive = idx === activeSegIdx;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            ref={(el) => (stripRefs.current[idx] = el)}
+                                            onClick={() => seekTo(seg.start)}
+                                            className={`strip-row ${isActive ? 'strip-active' : ''}`}
+                                        >
+                                            <div style={styles.stripMetaCol}>
+                                                <span style={styles.stripTimePill}>{fmtZulu(seg.start)}</span>
+                                                <span style={styles.stripDuration}>{(seg.end - seg.start).toFixed(1)}s</span>
+                                            </div>
+
+                                            <div style={styles.stripBodyCol}>
+                                                <div style={styles.stripText}>
+                                                    {tagAviationText(seg.text).map((tok, i) => (
+                                                        tok.cls ? <span key={i} className={tok.cls}>{tok.t}</span> : <span key={i}>{tok.t}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); copyToClipboard(seg.text); }}
+                                                className="btn-tactical"
+                                                style={{ fontSize: 9, padding: '2px 6px' }}
+                                                title="Copy transmission"
+                                            >
+                                                CPY
+                                            </button>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div style={styles.emptyNoteLarge}>No transmission matches filter "{searchFilter}"</div>
+                            )}
+                        </div>
+
+                        {/* ATC PHRASEOLOGY LEGEND */}
+                        <div style={styles.legendBar}>
+                            <span style={{ fontSize: 10, color: '#64748b', fontFamily: 'JetBrains Mono', marginRight: 6 }}>TAGS:</span>
+                            <span className="tok-callsign" style={styles.legendChip}>CALLSIGN</span>
+                            <span className="tok-verb" style={styles.legendChip}>INSTRUCTION / VERB</span>
+                            <span className="tok-runway" style={styles.legendChip}>RUNWAY</span>
+                            <span className="tok-heading" style={styles.legendChip}>HEADING / VECTOR</span>
+                            <span className="tok-alt" style={styles.legendChip}>ALTITUDE / FL</span>
+                            <span className="tok-nav" style={styles.legendChip}>NAV AID</span>
+                            <span className="tok-freq" style={styles.legendChip}>FREQUENCY</span>
+                        </div>
+                    </div>
+
+                    {/* FLIGHT LOGBOOK & AUDIT TRAIL (RIGHT PANEL) */}
+                    <div className="avionics-card" style={{ padding: 14, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                            <span style={styles.sectionTitle}>FLIGHT RECORDER LOGBOOK</span>
+                            <button onClick={() => loadHistory(historyPage)} className="btn-tactical" title="Refresh Database">
+                                ↻ SYNC
+                            </button>
+                        </div>
+
+                        <div style={styles.historyListScroll}>
+                            {historyLoading ? (
+                                <div style={styles.emptyNoteLarge}>Loading database records...</div>
+                            ) : historyList.length > 0 ? (
+                                historyList.map((rec) => {
+                                    const isLoaded = rec.id === loadedRecordId;
+                                    return (
+                                        <div
+                                            key={rec.id}
+                                            onClick={() => loadHistoricalRecord(rec.id)}
+                                            className={`history-item ${isLoaded ? 'active' : ''}`}
+                                        >
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={styles.historyFilename} title={rec.filename}>{rec.filename}</span>
+                                                <button
+                                                    onClick={(e) => deleteHistoricalRecord(e, rec.id)}
+                                                    style={styles.deleteBtn}
+                                                    title="Purge record"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, fontFamily: 'JetBrains Mono', color: '#64748b' }}>
+                                                <span>{fmtDuration(rec.speech_duration_seconds)}</span>
+                                                <span style={{ color: rec.device === 'cuda' ? '#10b981' : '#38bdf8' }}>
+                                                    {rec.device?.toUpperCase()}
+                                                </span>
+                                                <span>{rec.created_at ? rec.created_at.split(' ')[0] : (rec.timestamp || 'LOG')}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div style={styles.emptyNoteLarge}>No past recordings found in database</div>
+                            )}
+                        </div>
+
+                        {/* Pagination */}
+                        {historyTotalPages > 1 && (
+                            <div style={styles.paginationRow}>
+                                <button
+                                    onClick={() => loadHistory(historyPage - 1)}
+                                    disabled={historyPage <= 1}
+                                    className="btn-tactical"
+                                >
+                                    ◀
+                                </button>
+                                <span style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: '#94a3b8' }}>
+                                    PG {historyPage} / {historyTotalPages}
+                                </span>
+                                <button
+                                    onClick={() => loadHistory(historyPage + 1)}
+                                    disabled={historyPage >= historyTotalPages}
+                                    className="btn-tactical"
+                                >
+                                    ▶
+                                </button>
+                            </div>
+                        )}
+
+                        {/* HOTKEY QUICK REFERENCE */}
+                        <div style={styles.hotkeyFooter}>
+                            <div style={styles.hotkeyItem}><kbd style={styles.kbd}>SPACE</kbd> PLAY/PAUSE</div>
+                            <div style={styles.hotkeyItem}><kbd style={styles.kbd}>←/→</kbd> ±3s SEEK</div>
+                            <div style={styles.hotkeyItem}><kbd style={styles.kbd}>R</kbd> REPLAY SEG</div>
+                            <div style={styles.hotkeyItem}><kbd style={styles.kbd}>D</kbd> A/B AUDIO</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }
 
-function StatChip({ label, value, accent }) {
-    return (
-        <div className="stat-chip" style={{ ...styles.statChip, borderColor: accent ? '#00ff9c44' : '#2a3644' }}>
-            <span style={styles.statChipLabel}>{label}</span>
-            <span style={{ ...styles.statChipValue, color: accent ? '#00ff9c' : '#e8edf2' }}>{value}</span>
-        </div>
-    );
-}
-
-function MiniStat({ label, value }) {
-    return (
-        <div className="mini-stat" style={styles.miniStat}>
-            <div style={styles.miniStatLabel}>{label}</div>
-            <div style={styles.miniStatValue}>{value}</div>
-        </div>
-    );
-}
-
-function LegendItem({ cls, label }) {
-    return (
-        <div style={styles.legendItem}>
-            <span className={cls} style={{ padding: '1px 6px', borderRadius: 3 }}>abc</span>
-            <span style={styles.legendLabel}>{label}</span>
-        </div>
-    );
-}
-
-const mono = "'JetBrains Mono', monospace";
-const sans = "'Inter', sans-serif";
-
+// ---------------------------------------------------------------------------
+// Consolidated Avionics Styling Tokens
+// ---------------------------------------------------------------------------
 const styles = {
-    root: {
-        background: '#0a0e12',
-        backgroundImage: 'radial-gradient(ellipse 80% 50% at 15% 10%, rgba(0,255,156,0.015) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(255,176,0,0.01) 0%, transparent 50%)',
-        color: '#e8edf2',
-        fontFamily: sans,
+    consoleContainer: {
+        background: '#06090e',
         minHeight: '100vh',
-        padding: 20,
+        color: '#e2e8f0',
+        fontFamily: "'Inter', sans-serif",
         display: 'flex',
         flexDirection: 'column',
-        gap: 16,
-        position: 'relative',
-        overflow: 'hidden',
     },
-    header: {
+    topBar: {
+        background: '#090e15',
+        borderBottom: '1px solid #162232',
+        padding: '10px 20px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: 12,
-        paddingBottom: 16,
-        borderBottom: '1px solid #1a232d',
     },
-    headerLeft: { display: 'flex', alignItems: 'center', gap: 14 },
-    logoMark: {
-        fontFamily: mono, fontWeight: 700, fontSize: 16,
-        background: '#0f1620', border: '1px solid #00ff9c55', color: '#00ff9c',
-        padding: '8px 12px', borderRadius: 4, letterSpacing: 2,
-        textAlign: 'center', lineHeight: 1.1,
-    },
-    title: { fontSize: 17, fontWeight: 700, letterSpacing: 0.3, lineHeight: 1.4 },
-    subtitle: { fontSize: 11, color: '#5f6f80', fontFamily: mono, marginTop: 3, letterSpacing: 0.3 },
-    headerStats: { display: 'flex', gap: 8, flexWrap: 'wrap' },
-    statChip: {
-        display: 'flex', flexDirection: 'column', gap: 2,
-        border: '1px solid #2a3644', borderRadius: 5, padding: '5px 10px',
-        background: '#0f1620', minWidth: 68,
-    },
-    statChipLabel: { fontSize: 9.5, color: '#5f6f80', fontFamily: mono, textTransform: 'uppercase', letterSpacing: 0.5 },
-    statChipValue: { fontSize: 13, fontFamily: mono, fontWeight: 700 },
-
-    statsBar: {
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10,
-    },
-    miniStat: {
-        background: '#0f1620', border: '1px solid #1a232d', borderRadius: 6, padding: '10px 14px',
-    },
-    miniStatLabel: { fontSize: 10.5, color: '#5f6f80', fontFamily: mono, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
-    miniStatValue: { fontSize: 16, fontFamily: mono, fontWeight: 700, color: '#ffb000' },
-
-    panel: {
-        background: '#0d131a', border: '1px solid #1a232d', borderRadius: 8, padding: 14,
-    },
-    panelHeadRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-    panelLabel: { fontSize: 11, color: '#7d8b9a', fontFamily: mono, textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700 },
-    timecode: { fontFamily: mono, fontSize: 12, color: '#00ff9c' },
-    playBtn: {
-        background: '#131b24', border: '1px solid #2a3644', color: '#e8edf2',
-        borderRadius: 5, padding: '6px 12px', fontFamily: mono, fontSize: 12, fontWeight: 600,
-    },
-    waveCanvas: { width: '100%', height: 90, display: 'block', borderRadius: 4, cursor: 'pointer' },
-
-    mainGrid: {
-        display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16,
-    },
-
-    toggleGroup: { display: 'flex', gap: 4, background: '#0f1620', border: '1px solid #1a232d', borderRadius: 5, padding: 2 },
-    toggleBtn: { background: 'transparent', border: 'none', color: '#6b7a8a', fontFamily: mono, fontSize: 11, padding: '4px 10px', borderRadius: 4 },
-    toggleBtnActive: { background: '#1a232d', color: '#00ff9c' },
-
-    segList: { maxHeight: 380, overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' },
-    segRow: { display: 'flex', gap: 12, padding: '7px 10px', cursor: 'pointer', alignItems: 'baseline' },
-    segTime: { fontFamily: mono, fontSize: 11, color: '#5f6f80', minWidth: 58, flexShrink: 0 },
-    segText: { fontSize: 13, lineHeight: 1.6, color: '#c3ccd4' },
-
-    fullText: { fontSize: 13, lineHeight: 1.9, color: '#c3ccd4', maxHeight: 380, overflowY: 'auto', padding: '4px 4px' },
-
-    legend: { display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 12, paddingTop: 10, borderTop: '1px solid #1a232d' },
-    legendItem: { display: 'flex', alignItems: 'center', gap: 6 },
-    legendLabel: { fontSize: 10.5, color: '#5f6f80', fontFamily: mono },
-
-    chunkCount: { fontFamily: mono, fontSize: 11, color: '#5f6f80' },
-    chunkControls: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 },
-    fieldLabel: { fontSize: 10, color: '#5f6f80', fontFamily: mono, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 },
-    select: {
-        background: '#0f1620', border: '1px solid #2a3644', color: '#e8edf2',
-        borderRadius: 5, padding: '7px 10px', fontFamily: mono, fontSize: 12,
-    },
-
-    chunkMeta: { background: '#0f1620', border: '1px solid #1a232d', borderRadius: 6, padding: 10, marginBottom: 14 },
-    chunkMetaRow: { display: 'flex', justifyContent: 'space-between', padding: '3px 0' },
-    metaKey: { fontSize: 11, color: '#5f6f80', fontFamily: mono },
-    metaVal: { fontSize: 11, color: '#e8edf2', fontFamily: mono, fontWeight: 700 },
-
-    chunkStrip: { position: 'relative', height: 30, background: '#0f1620', borderRadius: 4, border: '1px solid #1a232d' },
-    stripCaption: { fontSize: 10, color: '#4a5868', fontFamily: mono, marginTop: 6, textAlign: 'center' },
-
-    footer: {
-        fontSize: 11, color: '#4a5868', fontFamily: mono, lineHeight: 1.6,
-        borderTop: '1px solid #1a232d', paddingTop: 12,
-    },
-    formRow: {
+    radarBeacon: {
+        width: 24,
+        height: 24,
+        borderRadius: '50%',
+        border: '1.5px solid #00f0ff',
         display: 'flex',
-        flexWrap: 'wrap',
-        gap: 12,
-        alignItems: 'flex-end',
-        marginTop: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0, 240, 255, 0.08)',
     },
-    formField: {
+    radarDot: {
+        width: 8,
+        height: 8,
+        borderRadius: '50%',
+        background: '#00f0ff',
+        boxShadow: '0 0 10px #00f0ff',
+    },
+    brandTitle: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 18,
+        fontWeight: 800,
+        letterSpacing: 2,
+        color: '#f8fafc',
+    },
+    versionTag: {
+        fontSize: 9,
+        background: '#162438',
+        border: '1px solid #233750',
+        padding: '2px 5px',
+        borderRadius: 3,
+        color: '#38bdf8',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 600,
+    },
+    brandSub: {
+        display: 'block',
+        fontSize: 9,
+        color: '#64748b',
+        fontFamily: "'JetBrains Mono', monospace",
+        letterSpacing: 1.5,
+    },
+    telemetryGroup: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        flexWrap: 'wrap',
+    },
+    telemetryPill: {
+        background: '#0d1520',
+        border: '1px solid #1a293c',
+        borderRadius: 4,
+        padding: '4px 8px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 4,
-        flex: '1 1 180px',
+    },
+    pillLabel: {
+        fontSize: 8,
+        color: '#64748b',
+        fontFamily: "'JetBrains Mono', monospace",
+        letterSpacing: 1,
+    },
+    pillVal: {
+        fontSize: 11,
+        fontWeight: 700,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#f1f5f9',
+    },
+    mainContent: {
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        maxWidth: 1600,
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box',
+    },
+    topRowGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1.2fr 1fr',
+        gap: 14,
+    },
+    sectionHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+        borderBottom: '1px solid #14202e',
+        paddingBottom: 6,
+    },
+    sectionTitle: {
+        fontSize: 11,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 700,
+        letterSpacing: 1.5,
+        color: '#94a3b8',
+    },
+    pulseActive: {
+        fontSize: 10,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#00f0ff',
+        animation: 'blink 1.5s infinite',
+    },
+    ingestForm: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    inputLabel: {
+        display: 'block',
+        fontSize: 9,
+        color: '#64748b',
+        fontFamily: "'JetBrains Mono', monospace",
+        marginBottom: 4,
+        letterSpacing: 1,
     },
     fileInput: {
-        background: '#0f1620',
-        border: '1px solid #2a3644',
-        color: '#e8edf2',
-        borderRadius: 5,
-        padding: '6px 10px',
-        fontFamily: mono,
-        fontSize: 12,
-        cursor: 'pointer',
-    },
-    checkboxContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        height: 32,
-    },
-    checkbox: {
-        cursor: 'pointer',
-        accentColor: '#00ff9c',
-        width: 16,
-        height: 16,
-    },
-    checkboxLabel: {
-        fontSize: 12,
-        color: '#c3ccd4',
-        cursor: 'pointer',
-        userSelect: 'none',
-    },
-    numberInput: {
-        background: '#0f1620',
-        border: '1px solid #2a3644',
-        color: '#e8edf2',
-        borderRadius: 5,
-        padding: '7px 10px',
-        fontFamily: mono,
-        fontSize: 12,
         width: '100%',
-    },
-    submitBtn: {
-        background: '#00ff9c',
-        border: 'none',
-        color: '#0a0e12',
-        borderRadius: 5,
-        padding: '8px 16px',
-        fontFamily: mono,
-        fontSize: 12,
-        fontWeight: 700,
-        height: 32,
-        alignSelf: 'flex-end',
-        transition: 'background 0.2s ease',
-    },
-    statusMsg: {
-        fontSize: 12,
-        color: '#00ff9c',
-        fontFamily: mono,
-        marginTop: 8,
-    },
-    errorMsg: {
-        fontSize: 12,
-        color: '#ff8a65',
-        fontFamily: mono,
-        marginTop: 8,
-    },
-    loaderSpinner: {
+        background: '#090f17',
+        border: '1px solid #1c2b3d',
+        borderRadius: 4,
+        padding: '5px 8px',
+        color: '#cbd5e1',
         fontSize: 11,
-        color: '#ffb000',
-        fontFamily: mono,
-        textTransform: 'uppercase',
+        fontFamily: "'JetBrains Mono', monospace",
+        boxSizing: 'border-box',
     },
-    activeSegmentHud: {
-        background: '#070a0e',
-        border: '1px solid #1a232d',
-        borderRadius: 6,
-        padding: '12px 16px',
-        marginTop: 12,
-        minHeight: 56,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    activeSegmentContent: {
-        display: 'flex',
-        gap: 12,
-        alignItems: 'center',
+    selectInput: {
         width: '100%',
+        height: 32,
+        background: '#090f17',
+        border: '1px solid #1c2b3d',
+        borderRadius: 4,
+        padding: '4px 8px',
+        color: '#cbd5e1',
+        fontSize: 11,
+        fontFamily: "'JetBrains Mono', monospace",
     },
-    hudTimecode: {
-        fontFamily: mono,
-        fontSize: 12,
-        color: '#ffb000',
-        whiteSpace: 'nowrap',
+    actionSubmitBtn: {
+        background: '#00f0ff',
+        color: '#06090e',
+        border: 'none',
+        borderRadius: 4,
+        padding: '8px 16px',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        fontWeight: 800,
+        letterSpacing: 1,
+        boxShadow: '0 0 14px rgba(0,240,255,0.3)',
     },
-    hudText: {
-        fontSize: 15,
-        fontWeight: 500,
-        color: '#e8edf2',
-        lineHeight: 1.4,
-    },
-    hudPlaceholder: {
-        fontSize: 12,
-        color: '#4a5868',
-        fontFamily: mono,
-        fontStyle: 'italic',
-    },
-    plainLangText: {
-        fontFamily: mono,
-        fontSize: 12,
-        color: '#ffb000',
-        fontWeight: 600,
-        height: 16,
-    },
-    topGrid: {
-        display: 'grid',
-        gridTemplateColumns: '1.4fr 1fr',
-        gap: 16,
-    },
-    historyList: {
-        maxHeight: 180,
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-        marginTop: 6,
-        paddingRight: 4,
-    },
-    historyEmpty: {
-        fontFamily: mono,
-        fontSize: 12,
-        color: '#5f6f80',
-        padding: '16px 0',
-        textAlign: 'center',
-        fontStyle: 'italic',
-    },
-    historyRow: {
-        display: 'flex',
-        flexDirection: 'column',
+    statusBarNotice: {
+        marginTop: 10,
         padding: '6px 10px',
-        background: '#0f1620',
-        border: '1px solid #1a232d',
+        background: 'rgba(0, 240, 255, 0.08)',
+        borderLeft: '3px solid #00f0ff',
+        fontSize: 11,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#38bdf8',
+    },
+    errorNotice: {
+        marginTop: 10,
+        padding: '6px 10px',
+        background: 'rgba(239, 68, 68, 0.1)',
+        borderLeft: '3px solid #ef4444',
+        fontSize: 11,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#f87171',
+    },
+    entityMatrixGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 8,
+    },
+    entityCard: {
+        background: '#070c12',
+        border: '1px solid #14202e',
+        borderRadius: 4,
+        padding: 8,
+        minHeight: 60,
+    },
+    entityHeader: {
+        fontSize: 9,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#64748b',
+        marginBottom: 6,
+        letterSpacing: 1,
+    },
+    entityPillContainer: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 4,
+    },
+    entityChip: {
+        fontSize: 10,
+        fontFamily: "'JetBrains Mono', monospace",
+        background: '#0f1722',
+        padding: '2px 5px',
+        borderRadius: 3,
+        border: '1px solid #1e2c3e',
+    },
+    emptyNote: {
+        fontSize: 10,
+        fontStyle: 'italic',
+        color: '#475569',
+        fontFamily: "'JetBrains Mono', monospace",
+    },
+    emptyNoteLarge: {
+        padding: 20,
+        textAlign: 'center',
+        fontSize: 11,
+        color: '#475569',
+        fontFamily: "'JetBrains Mono', monospace",
+    },
+    timecodeDisplay: {
+        fontSize: 12,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#00f0ff',
+        fontWeight: 700,
+        background: '#091018',
+        padding: '4px 8px',
+        borderRadius: 4,
+        border: '1px solid #162436',
+    },
+    rateSelect: {
+        background: '#111a26',
+        border: '1px solid #1e2e42',
+        color: '#94a3b8',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        borderRadius: 4,
+        padding: '4px 6px',
+    },
+    playMasterBtn: {
+        background: '#10b981',
+        border: 'none',
+        color: '#06090e',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 11,
+        fontWeight: 800,
+        padding: '6px 14px',
         borderRadius: 4,
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
+        boxShadow: '0 0 12px rgba(16,185,129,0.3)',
     },
-    historyRowTop: {
+    transmissionHud: {
+        marginTop: 10,
+        background: '#070c12',
+        border: '1px solid #14202e',
+        borderRadius: 4,
+        padding: '8px 12px',
+        minHeight: 38,
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 2,
+    },
+    hudBadge: {
+        fontSize: 9,
+        fontFamily: "'JetBrains Mono', monospace",
+        background: '#162232',
+        color: '#38bdf8',
+        padding: '3px 6px',
+        borderRadius: 3,
+        fontWeight: 700,
+        flexShrink: 0,
+    },
+    hudTransmissionText: {
+        fontSize: 13,
+        fontWeight: 500,
+        letterSpacing: 0.3,
+    },
+    hudIdle: {
+        fontSize: 10,
+        color: '#475569',
+        fontFamily: "'JetBrains Mono', monospace",
+        letterSpacing: 1.5,
+    },
+    bottomRowGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1.7fr 1fr',
+        gap: 14,
+    },
+    countBadge: {
+        fontSize: 9,
+        background: '#0e1824',
+        border: '1px solid #18283c',
+        color: '#38bdf8',
+        padding: '2px 6px',
+        borderRadius: 3,
+        fontFamily: "'JetBrains Mono', monospace",
+    },
+    searchInput: {
+        background: '#090f17',
+        border: '1px solid #1c2b3d',
+        borderRadius: 4,
+        padding: '4px 8px',
+        color: '#cbd5e1',
+        fontSize: 10,
+        fontFamily: "'JetBrains Mono', monospace",
+        width: 170,
+    },
+    stripListScroll: {
+        maxHeight: 380,
+        overflowY: 'auto',
+        background: '#070b10',
+        border: '1px solid #14202e',
+        borderRadius: 4,
+    },
+    stripMetaCol: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 2,
+        flexShrink: 0,
+        width: 82,
+    },
+    stripTimePill: {
+        fontSize: 10,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#00f0ff',
+        fontWeight: 700,
+    },
+    stripDuration: {
+        fontSize: 8,
+        fontFamily: "'JetBrains Mono', monospace",
+        color: '#475569',
+    },
+    stripBodyCol: {
+        flex: 1,
+    },
+    stripText: {
+        fontSize: 12,
+        lineHeight: 1.5,
+    },
+    legendBar: {
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginTop: 10,
+        paddingTop: 8,
+        borderTop: '1px solid #121c28',
+    },
+    legendChip: {
+        fontSize: 9,
+        fontFamily: "'JetBrains Mono', monospace",
+        padding: '1px 4px',
+    },
+    historyListScroll: {
+        maxHeight: 280,
+        overflowY: 'auto',
+        background: '#070b10',
+        border: '1px solid #14202e',
+        borderRadius: 4,
+        flex: 1,
     },
     historyFilename: {
-        fontSize: 12.5,
+        fontSize: 11,
+        fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 600,
-        color: '#e8edf2',
-        whiteSpace: 'nowrap',
+        color: '#cbd5e1',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
-        maxWidth: '80%',
+        whiteSpace: 'nowrap',
+        maxWidth: 220,
     },
-    historyTime: {
-        fontFamily: mono,
+    deleteBtn: {
+        background: 'transparent',
+        border: 'none',
+        color: '#ef4444',
+        cursor: 'pointer',
         fontSize: 11,
-        color: '#ffb000',
+        padding: 0,
     },
-    historyRowBottom: {
+    paginationRow: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-    },
-    historyTimestamp: {
-        fontFamily: mono,
-        fontSize: 10,
-        color: '#5f6f80',
-    },
-    historyMeta: {
-        fontFamily: mono,
-        fontSize: 10,
-        color: '#5f6f80',
-    },
-    historyPagination: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 12,
         marginTop: 8,
-        borderTop: '1px solid #1a232d',
+    },
+    hotkeyFooter: {
+        marginTop: 10,
         paddingTop: 8,
+        borderTop: '1px solid #121c28',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 6,
     },
-    paginationBtn: {
-        background: '#131b24',
-        border: '1px solid #2a3644',
-        color: '#e8edf2',
-        borderRadius: 4,
-        padding: '4px 10px',
-        fontFamily: mono,
-        fontSize: 11,
-        cursor: 'pointer',
+    hotkeyItem: {
+        fontSize: 9,
+        color: '#64748b',
+        fontFamily: "'JetBrains Mono', monospace",
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
     },
-    paginationText: {
-        fontFamily: mono,
-        fontSize: 11.5,
-        color: '#5f6f80',
-    },
+    kbd: {
+        background: '#162232',
+        border: '1px solid #233750',
+        color: '#94a3b8',
+        borderRadius: 2,
+        padding: '1px 3px',
+        fontSize: 8,
+    }
 };

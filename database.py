@@ -1,3 +1,8 @@
+"""
+AirbandScribe — SQLite Flight Telemetry & Transcription Persistence Engine.
+Stores flight audio transcriptions, segment offsets, acoustic metrics, and processing hardware data.
+"""
+
 import sqlite3
 import json
 import os

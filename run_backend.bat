@@ -1,6 +1,6 @@
 @echo off
 echo ============================================================
-echo Starting ATC ASR Transcription Backend (FastAPI on Port 8000)
+echo   AirbandScribe // Core Transcription Backend (FastAPI :8000)
 echo ============================================================
 cd /d "%~dp0"
 if exist venv\Scripts\activate.bat (

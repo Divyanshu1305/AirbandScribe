@@ -18,9 +18,9 @@ import database
 database.init_db()
 
 app = FastAPI(
-    title="Air Traffic Control (ATC) ASR Transcription API",
-    description="High-performance ASR Transcription Pipeline tailored for noisy ATC communications.",
-    version="1.1.0"
+    title="AirbandScribe ASR Intelligence API",
+    description="High-precision Aeronautical VHF Automatic Speech Recognition & Acoustic Signal Intelligence Engine.",
+    version="1.2.0"
 )
 
 # Enable CORS for decoupled local frontend development
@@ -58,8 +58,10 @@ def read_status():
 
     return {
         "status": "online",
-        "service": "ATC ASR Intelligence Pipeline",
-        "version": "1.1.0",
+        "service": "AirbandScribe VHF Intelligence Engine",
+        "version": "1.2.0",
+        "codename": "STARS-ECHELON",
+        "airband": "VHF AM 118.000 - 136.975 MHz",
         "features": [
             "Butterworth Bandpass Filter (100Hz - 8000Hz)",
             "Spectral Gating Noise Reduction (noisereduce)",

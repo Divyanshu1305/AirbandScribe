@@ -6,7 +6,10 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Forward /transcribe and /docs to the FastAPI backend
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
       '/transcribe': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
@@ -23,7 +26,6 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-      // Serve intermediate audio files from the output directory
       '/output': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,

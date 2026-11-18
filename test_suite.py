@@ -1,5 +1,7 @@
 """
-Comprehensive test suite for ATC Recording Transcription system.
+AirbandScribe — Comprehensive Test Suite
+Validates ATC phraseology normalization, audio chunking with overlap deduplication,
+SQLite database persistence, and FastAPI REST endpoints.
 """
 
 import os
@@ -117,3 +119,4 @@ class TestAPIEndpoints(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

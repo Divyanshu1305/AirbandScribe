@@ -1,17 +1,18 @@
 @echo off
 echo ============================================================
-echo Launching ATC ASR Full Application (Backend + Frontend)
+echo   AirbandScribe // Aeronautical VHF Speech Intelligence
+echo   Launching Full Stack: Backend (Port 8000) + Frontend (Port 3000)
 echo ============================================================
 cd /d "%~dp0"
 
-start "ATC ASR Backend (Port 8000)" cmd /k run_backend.bat
+start "AirbandScribe Core API (Port 8000)" cmd /k run_backend.bat
 timeout /t 2 /nobreak >nul
-start "ATC ASR Frontend (Port 3000)" cmd /k run_frontend.bat
+start "AirbandScribe Avionics Console (Port 3000)" cmd /k run_frontend.bat
 
 echo.
 echo ============================================================
-echo   ATC ASR Intelligence Console is launching!
-echo   - Backend API:    http://127.0.0.1:8000
-echo   - Interactive UI: http://localhost:3000 (or http://127.0.0.1:8000)
-echo   - Swagger Docs:   http://127.0.0.1:8000/docs
+echo   AirbandScribe Console is online!
+echo   - Avionics Web Console: http://localhost:3000
+echo   - Backend Core API:     http://127.0.0.1:8000
+echo   - Interactive API Docs: http://127.0.0.1:8000/docs
 echo ============================================================

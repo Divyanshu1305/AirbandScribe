@@ -1,6 +1,6 @@
 @echo off
 echo ============================================================
-echo Starting ATC ASR Frontend Console (Vite on Port 3000)
+echo   AirbandScribe // Avionics Web Console (Vite :3000)
 echo ============================================================
 cd /d "%~dp0frontend"
 if not exist node_modules (

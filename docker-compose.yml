@@ -1,6 +1,6 @@
 version: '3.8'
 
-# ── ATC Transcription App — Docker Compose ─────────────────────────────────────
+# ── AirbandScribe — Aeronautical Speech Intelligence Docker Compose ─────────────
 # Usage:
 #   CPU (default):  docker compose up --build
 #   GPU (NVIDIA):   docker compose --profile gpu up --build
@@ -10,18 +10,18 @@ version: '3.8'
 
 services:
 
-  # ── CPU service (default) ──────────────────────────────────────────────────
-  atc-asr-cpu:
+  # ── AirbandScribe CPU Service (Production Core) ─────────────────────────────
+  airband-scribe-cpu:
     build:
       context: .
-      dockerfile: Dockerfile          # root-level Dockerfile (CPU)
-    container_name: atc-asr-cpu
+      dockerfile: Dockerfile
+    container_name: airband-scribe-cpu
     ports:
-      - "8000:8000"                   # FastAPI + React SPA
+      - "8000:8000"                   # FastAPI + React Avionics Console
     volumes:
-      - atc_output:/app/output        # persist transcription audio files
-      - atc_db:/app                   # persist SQLite DB across rebuilds
-      - ./test-files:/app/test-files  # mount local test audio
+      - airband_output:/app/output    # Persist audio outputs
+      - airband_db:/app               # Persist SQLite records
+      - ./test-files:/app/test-files  # Local flight test audio
     environment:
       - DEVICE=cpu
       - PYTHONUNBUFFERED=1
@@ -33,17 +33,17 @@ services:
       retries: 3
       start_period: 20s
 
-  # ── GPU service (opt-in via --profile gpu) ─────────────────────────────────
-  atc-asr-gpu:
+  # ── AirbandScribe GPU Service (CUDA Accelerated) ───────────────────────────
+  airband-scribe-gpu:
     build:
       context: .
       dockerfile: docker/Dockerfile.gpu
-    container_name: atc-asr-gpu
+    container_name: airband-scribe-gpu
     ports:
-      - "8001:8000"                   # GPU variant on 8001 to avoid port conflict
+      - "8001:8000"                   # GPU container on port 8001
     volumes:
-      - atc_output:/app/output
-      - atc_db:/app
+      - airband_output:/app/output
+      - airband_db:/app
       - ./test-files:/app/test-files
     environment:
       - DEVICE=cuda
@@ -59,7 +59,7 @@ services:
       - gpu
     restart: unless-stopped
 
-# ── Named volumes ──────────────────────────────────────────────────────────────
+# ── Named Volumes ──────────────────────────────────────────────────────────────
 volumes:
-  atc_output:
-  atc_db:
+  airband_output:
+  airband_db:

@@ -1,6 +1,6 @@
 """
-Audio Chunker and Parallel Processing Engine for ATC Recordings.
-Handles chunking long audio files with configurable overlap to ensure
+AirbandScribe — Overlapping Audio Chunking & Stitching Module.
+Handles chunking long ATC audio files with configurable overlap to ensure
 no boundary transmissions are dropped.
 """
 
@@ -189,3 +189,4 @@ def deduplicate_overlap_text(prev_text: str, curr_text: str) -> str:
             return " ".join(curr_words[k:])
 
     return curr_text.strip()
+

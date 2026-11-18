@@ -1,5 +1,5 @@
 # ==============================================================================
-# Dockerfile — ATC Audio Transcription App (CPU)
+# AirbandScribe — Aeronautical VHF Speech Transcription Engine (CPU Container)
 # Single-container build: FastAPI backend + pre-built React frontend (port 8000)
 # ==============================================================================
 
@@ -79,3 +79,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 
 # ── Launch ─────────────────────────────────────────────────────────────────────
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+

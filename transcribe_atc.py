@@ -1,8 +1,8 @@
 """
-ATC Audio Transcription Pipeline (CrispASR Engine)
-Integrated with Butterworth Bandpass Filtering, Spectral Noise Reduction (noisereduce),
-Voice Activity Detection (Silero VAD), Overlapping Chunking for Long Audio,
-and Domain-Specific ATC Phraseology Normalization.
+AirbandScribe — Aeronautical VHF Automatic Speech Recognition Pipeline
+Integrated with Butterworth Bandpass Filtering, Spectral Noise Gating (noisereduce),
+Silero Voice Activity Detection (VAD), Overlapping Chunking for Long ATC Transmissions,
+and Domain-Specific ICAO/FAA Phraseology Normalization.
 """
 
 import os
@@ -53,7 +53,7 @@ class AudioTranscriptionPipeline:
         # Resolve model path
         self.model_path = self._resolve_model(model_path or whisper_model)
 
-        print(f"Initializing ATC Transcription Pipeline:")
+        print(f"Initializing AirbandScribe Transcription Pipeline:")
         print(f"  Executable:     {self.exe_path}")
         print(f"  Requested GPU:  {self.use_gpu}")
         print(f"  Actual Device:  {self.actual_device}")
@@ -572,7 +572,7 @@ class AudioTranscriptionPipeline:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ATC Audio Transcription Pipeline")
+    parser = argparse.ArgumentParser(description="AirbandScribe — Aeronautical VHF Speech Transcription Pipeline")
     parser.add_argument("audio_file", help="Path to input audio file")
     parser.add_argument("--model", default=r"models\ggufs\speech-model.gguf", help="Path to GGUF model")
     parser.add_argument("--exe_path", default=r"bin\cpu\crispasr.exe", help="Path to crispasr.exe")

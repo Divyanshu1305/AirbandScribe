@@ -1,23 +1,25 @@
 .git
 .gitignore
+.github
 venv
 .venv
+env
 __pycache__
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache
 *.log
+transcriptions.db
 output/*
 !output/.gitkeep
 test-files/*
 !test-files/.gitkeep
-# Ignore local GGUF models so the container builds and converts the model internally from scratch
 models/ggufs/*
 !models/ggufs/.gitkeep
-# Ignore Windows binaries when building Docker Linux images so our downloaded Linux binary isn't overwritten
 bin/cpu/*
 bin/cuda/*
 frontend/node_modules
 frontend/dist
+frontend/.vite
 offline.zip
