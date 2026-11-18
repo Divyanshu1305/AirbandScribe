@@ -239,7 +239,15 @@ export default function AirbandScribeConsole() {
     // Active Segment Tracking
     useEffect(() => {
         if (!dataset.segments || dataset.segments.length === 0) return;
-        const idx = dataset.segments.findIndex(s => playhead >= s.start && playhead <= s.end);
+        // 1. Exact match
+        let idx = dataset.segments.findIndex(s => playhead >= s.start && playhead <= s.end);
+        // 2. If in silence gap between transmissions, find closest preceding segment
+        if (idx === -1) {
+            idx = dataset.segments.reduce((bestIdx, s, currIdx) => {
+                if (s.start <= playhead) return currIdx;
+                return bestIdx;
+            }, -1);
+        }
         setActiveSegIdx(idx);
 
         // A-B Segment Loop Check
@@ -251,13 +259,28 @@ export default function AirbandScribeConsole() {
         }
     }, [playhead, dataset.segments, loopSegment]);
 
-    // Auto-scroll Active Strip into View
+    // Auto-scroll Active Strip into View (Accurate relative viewport positioning)
     useEffect(() => {
-        if (activeSegIdx >= 0 && stripRefs.current[activeSegIdx] && stripListRef.current) {
-            const container = stripListRef.current;
-            const elem = stripRefs.current[activeSegIdx];
+        if (activeSegIdx < 0 || !stripListRef.current) return;
+        const container = stripListRef.current;
+        const elem = stripRefs.current[activeSegIdx];
+        if (!elem) return;
+
+        // Accurate bounding rect relative to the scroll container viewport
+        const cRect = container.getBoundingClientRect();
+        const eRect = elem.getBoundingClientRect();
+
+        // Check if element is outside the visible container viewport
+        const isAbove = eRect.top < cRect.top + 15;
+        const isBelow = eRect.bottom > cRect.bottom - 15;
+
+        // Only scroll if element is actually out of the visible container viewport
+        if (isAbove || isBelow) {
+            const currentScroll = container.scrollTop;
+            const elemRelativeTop = eRect.top - cRect.top;
+            const targetTop = currentScroll + elemRelativeTop - (container.clientHeight / 2) + (elem.clientHeight / 2);
             container.scrollTo({
-                top: elem.offsetTop - container.clientHeight / 2 + elem.offsetHeight / 2,
+                top: Math.max(0, targetTop),
                 behavior: 'smooth'
             });
         }
@@ -643,6 +666,23 @@ export default function AirbandScribeConsole() {
                     border-left: 2px solid #10b981;
                 }
 
+                .btn-trash {
+                    background: rgba(239, 68, 68, 0.08);
+                    border: 1px solid rgba(239, 68, 68, 0.25);
+                    color: #f87171;
+                    border-radius: 3px;
+                    padding: 2px 5px;
+                    display: inline-flex;
+                    align-items: center;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                }
+                .btn-trash:hover {
+                    background: rgba(239, 68, 68, 0.25);
+                    border-color: #ef4444;
+                    color: #ffffff;
+                }
+
                 ::-webkit-scrollbar { width: 6px; height: 6px; }
                 ::-webkit-scrollbar-track { background: #070c12; }
                 ::-webkit-scrollbar-thumb { background: #1c2b3e; border-radius: 3px; }
@@ -950,11 +990,13 @@ export default function AirbandScribeConsole() {
                         <div ref={stripListRef} style={styles.stripListScroll}>
                             {visibleSegments.length > 0 ? (
                                 visibleSegments.map((seg, idx) => {
-                                    const isActive = idx === activeSegIdx;
+                                    const origIdx = dataset.segments ? dataset.segments.indexOf(seg) : idx;
+                                    const isActive = (origIdx >= 0 ? origIdx === activeSegIdx : idx === activeSegIdx);
+                                    const refKey = origIdx >= 0 ? origIdx : idx;
                                     return (
                                         <div
-                                            key={idx}
-                                            ref={(el) => (stripRefs.current[idx] = el)}
+                                            key={refKey}
+                                            ref={(el) => { if (el) stripRefs.current[refKey] = el; }}
                                             onClick={() => seekTo(seg.start)}
                                             className={`strip-row ${isActive ? 'strip-active' : ''}`}
                                         >
@@ -1021,15 +1063,30 @@ export default function AirbandScribeConsole() {
                                             onClick={() => loadHistoricalRecord(rec.id)}
                                             className={`history-item ${isLoaded ? 'active' : ''}`}
                                         >
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={styles.historyFilename} title={rec.filename}>{rec.filename}</span>
-                                                <button
-                                                    onClick={(e) => deleteHistoricalRecord(e, rec.id)}
-                                                    style={styles.deleteBtn}
-                                                    title="Purge record"
-                                                >
-                                                    ✕
-                                                </button>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, flex: 1 }}>
+                                                    <span style={{ fontSize: 11, flexShrink: 0 }}>📻</span>
+                                                    <span style={styles.historyFilename} title={rec.filename}>{rec.filename}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                                                    {isLoaded ? (
+                                                        <span style={styles.loadedBadge}>ON DECK</span>
+                                                    ) : (
+                                                        <span style={styles.readyBadge}>✓ READY</span>
+                                                    )}
+                                                    <button
+                                                        onClick={(e) => deleteHistoricalRecord(e, rec.id)}
+                                                        className="btn-trash"
+                                                        style={styles.deleteBtn}
+                                                        title="Delete recording from database"
+                                                    >
+                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                        <span style={{ marginLeft: 3, fontSize: 8 }}>DEL</span>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, fontFamily: 'JetBrains Mono', color: '#64748b' }}>
@@ -1405,6 +1462,7 @@ const styles = {
         width: 170,
     },
     stripListScroll: {
+        position: 'relative',
         maxHeight: 380,
         overflowY: 'auto',
         background: '#070b10',
@@ -1469,13 +1527,38 @@ const styles = {
         whiteSpace: 'nowrap',
         maxWidth: 220,
     },
+    readyBadge: {
+        fontSize: 8,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 700,
+        background: 'rgba(16, 185, 129, 0.12)',
+        color: '#10b981',
+        border: '1px solid rgba(16, 185, 129, 0.3)',
+        padding: '1px 5px',
+        borderRadius: 3,
+        letterSpacing: 0.5,
+    },
+    loadedBadge: {
+        fontSize: 8,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 700,
+        background: 'rgba(0, 240, 255, 0.15)',
+        color: '#00f0ff',
+        border: '1px solid #00f0ff',
+        padding: '1px 5px',
+        borderRadius: 3,
+        letterSpacing: 0.5,
+    },
     deleteBtn: {
-        background: 'transparent',
-        border: 'none',
-        color: '#ef4444',
+        background: 'rgba(239, 68, 68, 0.08)',
+        border: '1px solid rgba(239, 68, 68, 0.25)',
+        color: '#f87171',
         cursor: 'pointer',
-        fontSize: 11,
-        padding: 0,
+        fontSize: 9,
+        padding: '2px 5px',
+        borderRadius: 3,
+        display: 'inline-flex',
+        alignItems: 'center',
     },
     paginationRow: {
         display: 'flex',
