@@ -289,7 +289,7 @@ class AudioTranscriptionPipeline:
             if not json_found:
                 srt_path_1 = audio_file_path + ".srt"
                 srt_path_2 = os.path.splitext(audio_file_path)[0] + ".srt"
-                for spath in [srt_path_1, spath_2]:
+                for spath in [srt_path_1, srt_path_2]:
                     if os.path.exists(spath):
                         segments = self._parse_srt_file(spath)
                         try:

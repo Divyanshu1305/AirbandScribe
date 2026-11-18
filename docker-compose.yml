@@ -1,32 +1,49 @@
 version: '3.8'
 
+# ── ATC Transcription App — Docker Compose ─────────────────────────────────────
+# Usage:
+#   CPU (default):  docker compose up --build
+#   GPU (NVIDIA):   docker compose --profile gpu up --build
+#
+# After startup, open http://localhost:8000 in your browser.
+# ───────────────────────────────────────────────────────────────────────────────
+
 services:
+
+  # ── CPU service (default) ──────────────────────────────────────────────────
   atc-asr-cpu:
     build:
       context: .
-      dockerfile: docker/Dockerfile.cpu
+      dockerfile: Dockerfile          # root-level Dockerfile (CPU)
     container_name: atc-asr-cpu
     ports:
-      - "8000:8000"
-      - "3000:3000"
+      - "8000:8000"                   # FastAPI + React SPA
     volumes:
-      - ./output:/app/output
-      - ./test-files:/app/test-files
+      - atc_output:/app/output        # persist transcription audio files
+      - atc_db:/app                   # persist SQLite DB across rebuilds
+      - ./test-files:/app/test-files  # mount local test audio
     environment:
       - DEVICE=cpu
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
+  # ── GPU service (opt-in via --profile gpu) ─────────────────────────────────
   atc-asr-gpu:
     build:
       context: .
       dockerfile: docker/Dockerfile.gpu
     container_name: atc-asr-gpu
     ports:
-      - "8000:8000"
-      - "3000:3000"
+      - "8001:8000"                   # GPU variant on 8001 to avoid port conflict
     volumes:
-      - ./output:/app/output
+      - atc_output:/app/output
+      - atc_db:/app
       - ./test-files:/app/test-files
     environment:
       - DEVICE=cuda
@@ -41,3 +58,8 @@ services:
     profiles:
       - gpu
     restart: unless-stopped
+
+# ── Named volumes ──────────────────────────────────────────────────────────────
+volumes:
+  atc_output:
+  atc_db:
