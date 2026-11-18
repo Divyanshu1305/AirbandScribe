@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  atc-asr-cpu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.cpu
+    container_name: atc-asr-cpu
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    volumes:
+      - ./output:/app/output
+      - ./test-files:/app/test-files
+    environment:
+      - DEVICE=cpu
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  atc-asr-gpu:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.gpu
+    container_name: atc-asr-gpu
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    volumes:
+      - ./output:/app/output
+      - ./test-files:/app/test-files
+    environment:
+      - DEVICE=cuda
+      - PYTHONUNBUFFERED=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles:
+      - gpu
+    restart: unless-stopped

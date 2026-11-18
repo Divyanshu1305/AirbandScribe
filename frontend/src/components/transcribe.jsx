@@ -172,7 +172,7 @@ export default function ATCConsole() {
     const [applyNoiseRemoval, setApplyNoiseRemoval] = useState(true);
     const [noiseReduction, setNoiseReduction] = useState(0.75);
     const transcribeLang = 'en'; // English constant
-    const [transcribeDevice, setTranscribeDevice] = useState('cuda'); // cuda | cpu
+    const [transcribeDevice, setTranscribeDevice] = useState('cpu'); // cpu | cuda
     const [saveIntermediate, setSaveIntermediate] = useState(true);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [transcribeError, setTranscribeError] = useState(null);
@@ -251,6 +251,23 @@ export default function ATCConsole() {
             setStatusMessage(`Failed to load historical transcription: ${err.message}`);
         }
     }, []);
+
+    const handleDeleteHistory = useCallback(async (e, id) => {
+        e.stopPropagation();
+        if (!window.confirm(`Delete transcription record #${id}?`)) return;
+        try {
+            const res = await fetch(`/transcriptions/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+            if (loadedHistoryId === id) {
+                setLoadedHistoryId(null);
+            }
+            fetchHistory(historyPage);
+            setStatusMessage(`Deleted transcription #${id}`);
+        } catch (err) {
+            console.error("Failed to delete transcription:", err);
+            setStatusMessage(`Failed to delete record: ${err.message}`);
+        }
+    }, [fetchHistory, historyPage, loadedHistoryId]);
 
     // Load transcription history on mount
     useEffect(() => {
@@ -927,7 +944,24 @@ export default function ATCConsole() {
                 <div className="atc-panel" style={{ ...styles.panel, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                         <div style={styles.panelHeadRow}>
-                            <span style={styles.panelLabel}>Transcription History</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={styles.panelLabel}>Transcription History</span>
+                                <button
+                                    type="button"
+                                    onClick={() => fetchHistory(historyPage)}
+                                    title="Refresh History"
+                                    style={{
+                                        background: 'transparent',
+                                        border: '1px solid #1a232d',
+                                        color: '#5f6f80',
+                                        cursor: 'pointer',
+                                        borderRadius: 3,
+                                        fontSize: 11,
+                                        padding: '2px 6px',
+                                        fontFamily: mono
+                                    }}
+                                >↻</button>
+                            </div>
                             {historyLoading && <span style={styles.loaderSpinner}>Loading...</span>}
                         </div>
                         
@@ -943,7 +977,22 @@ export default function ATCConsole() {
                                     >
                                         <div style={styles.historyRowTop}>
                                             <span style={styles.historyFilename} title={item.filename}>{item.filename}</span>
-                                            <span style={styles.historyTime}>{fmtTime(item.speech_duration_seconds)}</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <span style={styles.historyTime}>{fmtTime(item.speech_duration_seconds)}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => handleDeleteHistory(e, item.id)}
+                                                    title="Delete Record"
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        color: '#ff5c5c',
+                                                        cursor: 'pointer',
+                                                        fontSize: 13,
+                                                        padding: '0 2px'
+                                                    }}
+                                                >×</button>
+                                            </div>
                                         </div>
                                         <div style={styles.historyRowBottom}>
                                             <span style={styles.historyTimestamp}>

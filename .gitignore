@@ -15,4 +15,7 @@ test-files/*
 
 offline.zip
 
-
+transcriptions.db
+output/*
+__pycache__/*
+*.pyc

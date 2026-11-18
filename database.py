@@ -1,7 +1,7 @@
 import sqlite3
 import json
 import os
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 
 DB_PATH = "transcriptions.db"
 
@@ -48,8 +48,8 @@ def save_transcription(
     device: str,
     timestamp: str,
     saved_transcription_file: str,
-    filtered_full_path_rel: str,
-    denoised_full_path_rel: str,
+    filtered_full_path_rel: Optional[str],
+    denoised_full_path_rel: Optional[str],
     intermediate_chunks: List[Dict[str, Any]]
 ) -> int:
     conn = get_db_connection()
@@ -82,24 +82,34 @@ def save_transcription(
     conn.close()
     return inserted_id
 
-def get_transcriptions(page: int = 1, limit: int = 10) -> Tuple[List[Dict[str, Any]], int]:
+def get_transcriptions(page: int = 1, limit: int = 10, search: Optional[str] = None) -> Tuple[List[Dict[str, Any]], int]:
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    where_clause = ""
+    params = []
+    if search and search.strip():
+        where_clause = "WHERE filename LIKE ? OR text LIKE ?"
+        term = f"%{search.strip()}%"
+        params.extend([term, term])
+
     # Get total count
-    cursor.execute("SELECT COUNT(*) FROM transcriptions")
+    cursor.execute(f"SELECT COUNT(*) FROM transcriptions {where_clause}", params)
     total = cursor.fetchone()[0]
     
     # Get paginated results ordered by newest first
     offset = (page - 1) * limit
-    cursor.execute("""
+    query = f"""
         SELECT id, filename, text, language, processing_time_seconds,
                speech_duration_seconds, vad_enabled, noise_removal_enabled,
                device, timestamp, filtered_full_path_rel, denoised_full_path_rel, created_at
         FROM transcriptions
+        {where_clause}
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
-    """, (limit, offset))
+    """
+    params.extend([limit, offset])
+    cursor.execute(query, params)
     
     rows = cursor.fetchall()
     transcriptions = []
@@ -122,7 +132,7 @@ def get_transcriptions(page: int = 1, limit: int = 10) -> Tuple[List[Dict[str, A
     conn.close()
     return transcriptions, total
 
-def get_transcription_by_id(transcription_id: int) -> Dict[str, Any]:
+def get_transcription_by_id(transcription_id: int) -> Optional[Dict[str, Any]]:
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM transcriptions WHERE id = ?", (transcription_id,))
@@ -150,3 +160,12 @@ def get_transcription_by_id(transcription_id: int) -> Dict[str, Any]:
         "intermediate_chunks": json.loads(row["intermediate_chunks"]) if row["intermediate_chunks"] else [],
         "created_at": row["created_at"]
     }
+
+def delete_transcription(transcription_id: int) -> bool:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM transcriptions WHERE id = ?", (transcription_id,))
+    deleted = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    return deleted
