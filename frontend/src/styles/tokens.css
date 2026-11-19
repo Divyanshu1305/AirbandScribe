@@ -1,0 +1,203 @@
+/* ==========================================================================
+   AIRBANDSCRIBE — ENTERPRISE LIGHT-FIRST DESIGN SYSTEM TOKENS
+   Aeronautical VHF Audio Transcription & Signal Analysis Workstation
+   ========================================================================== */
+
+:root {
+  /* 1. Core Surfaces & Backgrounds */
+  --color-app-bg: #F1F2EF;          /* Canvas Base (Warm Slate Fog) */
+  --color-surface-0: #FFFFFF;        /* Primary Card Surface (Pure White) */
+  --color-surface-1: #F8F9F7;        /* Secondary Inset Surface (Off-white) */
+  --color-surface-2: #EEF1EE;        /* Tertiary Inset Well */
+
+  /* 2. Hairline Structural Borders */
+  --color-border: #DCE2DE;          /* Standard Hairline Border (1.35:1) */
+  --color-border-sub: #EAEFEA;      /* Subdued Column Dividers */
+  --color-border-strong: #B0BBB5;   /* Strong / Focused Border */
+
+  /* 3. Typography & Text Contrast */
+  --color-text-0: #232D31;          /* Primary Charcoal Body (11.4:1 AAA) */
+  --color-text-1: #667278;          /* Secondary Slate Meta (4.8:1 AA) */
+  --color-text-2: #8E999E;          /* Muted Timestamp / Tick Marks (3.2:1) */
+  --color-text-inv: #FFFFFF;        /* Inverted High-Contrast Text */
+
+  /* 4. Brand Accents */
+  --color-pine-pri: #286B63;        /* Aeronautical Pine Primary (5.4:1 AA) */
+  --color-pine-hov: #205951;        /* Aeronautical Pine Hover / Active */
+  --color-pine-sub: #EBF3F1;        /* Pine Tint Highlight Surface */
+  --color-pine-border: #B2D1CB;     /* Pine Outline */
+
+  /* 5. Aviation Alerts & Caution */
+  --color-amber-pri: #B4874B;       /* Caution / Warning Amber (4.6:1 AA) */
+  --color-amber-hov: #966E39;       /* Amber Hover */
+  --color-amber-sub: #FBF6EE;       /* Amber Notice Well */
+
+  /* 6. Destructive & Errors */
+  --color-danger: #B23A22;          /* Destructive Red (5.8:1 AA) */
+  --color-danger-hov: #912E1A;      /* Destructive Red Hover */
+  --color-danger-sub: #FDF2F0;      /* Error Surface Tint */
+
+  /* 7. Dark Instrument Well (Scope & Waterfall only) */
+  --color-inst-bg: #18272A;         /* Cockpit Deep Basalt Surface */
+  --color-inst-grid: #25393D;       /* Scope Calibrated Gridlines */
+  --color-inst-text: #B4C2C4;       /* Instrument Subdued Text */
+  --color-signal-grn: #4B997E;      /* Oscilloscope Waveform Green */
+  --color-signal-amb: #E5A958;      /* Playhead Scrubber Amber */
+
+  /* 8. Aviation Phraseology Tags */
+  --tok-verb-bg: #FBF6EE;
+  --tok-verb-color: #9A6F32;
+  --tok-callsign-bg: #EBF3F1;
+  --tok-callsign-color: #216159;
+  --tok-runway-bg: #EAEFF4;
+  --tok-runway-color: #2C5374;
+  --tok-alt-bg: #F0EDF6;
+  --tok-alt-color: #583F85;
+  --tok-hdg-bg: #FDF1EA;
+  --tok-hdg-color: #A35427;
+  --tok-freq-bg: #FBF0F4;
+  --tok-freq-color: #9E3768;
+
+  /* 9. Typography Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* 10. Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* 11. Shadows & Depth */
+  --shadow-subtle: 0 1px 3px rgba(35, 45, 49, 0.05);
+  --shadow-card: 0 2px 6px rgba(35, 45, 49, 0.07);
+  --shadow-modal: 0 12px 36px rgba(24, 39, 42, 0.25);
+}
+
+/* Base resets & document rules */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-app-bg);
+  color: var(--color-text-0);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Professional Card Base */
+.airband-card {
+  background-color: var(--color-surface-0);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-subtle);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.airband-card:hover {
+  border-color: var(--color-border-strong);
+}
+
+/* Operational Buttons */
+.btn-action-primary {
+  background-color: var(--color-pine-pri);
+  color: #FFFFFF;
+  border: 1px solid var(--color-pine-hov);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-action-primary:hover:not(:disabled) {
+  background-color: var(--color-pine-hov);
+}
+
+.btn-action-primary:disabled {
+  background-color: var(--color-border);
+  color: var(--color-text-2);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+.btn-action-secondary {
+  background-color: var(--color-surface-0);
+  color: var(--color-text-0);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-action-secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-1);
+  border-color: var(--color-border-strong);
+}
+
+.btn-action-secondary.active {
+  background-color: var(--color-pine-sub);
+  color: var(--color-pine-pri);
+  border-color: var(--color-pine-border);
+  font-weight: 600;
+}
+
+/* Form Controls */
+.form-input, .form-select {
+  background-color: var(--color-surface-0);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-0);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 6px 10px;
+  transition: border-color 0.15s ease;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--color-pine-pri);
+  box-shadow: 0 0 0 2px var(--color-pine-sub);
+}
+
+/* Subtle Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-2);
+}
+
+/* Responsive Grid Helpers */
+.grid-2col-responsive {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 960px) {
+  .grid-2col-responsive {
+    grid-template-columns: 1fr;
+  }
+}
+

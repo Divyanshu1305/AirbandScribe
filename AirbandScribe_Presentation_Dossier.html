@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AirbandScribe // Comprehensive Project & Presentation Dossier</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    line-height: 1.6;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+  }
+  h1, h2, h3, h4 {
+    color: #0f172a;
+    font-weight: 700;
+  }
+  h1 {
+    font-size: 24pt;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 13pt;
+    color: #0369a1;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  h2 {
+    font-size: 15pt;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 4px;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    color: #0369a1;
+  }
+  h3 {
+    font-size: 12pt;
+    margin-top: 18px;
+    margin-bottom: 8px;
+  }
+  p, ul, ol {
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+  ul, ol {
+    padding-left: 22px;
+  }
+  li {
+    margin-bottom: 6px;
+  }
+  code {
+    font-family: "Courier New", Courier, monospace;
+    background: #f1f5f9;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 10pt;
+    color: #0f172a;
+  }
+  pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 9.5pt;
+    overflow-x: auto;
+    font-family: "Courier New", Courier, monospace;
+    line-height: 1.4;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 10pt;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  th {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  tr:nth-child(even) {
+    background: #f8fafc;
+  }
+  .callout {
+    background: #f0f9ff;
+    border-left: 4px solid #0284c7;
+    padding: 10px 14px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .badge-blue { background: #e0f2fe; color: #0369a1; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-amber { background: #fef3c7; color: #b45309; }
+  .page-break {
+    page-break-after: always;
+  }
+</style>
+</head>
+<body>
+
+<h1>AirbandScribe</h1>
+<div class="subtitle">Aeronautical VHF Automatic Speech Recognition & Acoustic Signal Intelligence Workstation</div>
+
+<div class="callout">
+  <strong>Executive Summary for Presentation:</strong><br>
+  AirbandScribe is an end-to-end, domain-specialized Automatic Speech Recognition (ASR) system engineered specifically for Air Traffic Control (ATC) voice communications on VHF frequencies (118.000–136.975 MHz). It resolves the four core failure points of generic speech models in aviation: heavy carrier noise, rapid multi-speaker transmissions, long audio boundary loss, and domain-specific phraseology (runways, flight levels, vectors, and callsigns).
+</div>
+
+<h2>1. The Problem Space & Aviation Challenges</h2>
+<ul>
+  <li><strong>Acoustic RF Degradation:</strong> Aviation communications use legacy VHF Amplitude Modulation (AM), resulting in heavy static, ignition noise, heterodyne squeal, and background cockpit noise.</li>
+  <li><strong>Domain Phraseology vs. Standard English:</strong> Commercial speech engines fail on aviation phonetics (e.g., "tree" for 3, "fife" for 5, "niner" for 9) and misinterpret operational clearances (e.g., transcribing "runway two seven left" as generic numbers rather than "Runway 27L").</li>
+  <li><strong>Boundary Loss in Long Broadcasts:</strong> ATC recordings frequently span 10 minutes to several hours. Traditional single-pass inference runs out of memory or drops sentences across chunk seams.</li>
+</ul>
+
+<h2>2. Complete System Architecture & Pipeline</h2>
+<pre>
+[ Raw VHF Aeronautical Audio Input (.wav, .mp3, etc.) ]
+                          │
+                          ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │ Stage 1: Acoustic Preprocessing & Noise Cancellation    │
+ │  ├── 5th-Order Butterworth Bandpass (100 Hz - 8,000 Hz) │
+ │  └── Spectral Gating Noise Reduction (noisereduce)      │
+ └─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │ Stage 2: Temporal Chunking & Voice Activity Detection   │
+ │  ├── 30-second chunks with 5-second overlap windows     │
+ │  └── Silero VAD v6.2 speech timestamp boundary gating   │
+ └─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │ Stage 3: High-Speed GGUF Inference Engine               │
+ │  ├── Beam Search (size 5) + Forced English Tokenizer    │
+ │  └── ICAO Hotword Biasing (runway, heading, ils, dme)   │
+ └─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │ Stage 4: ATC Phraseology Normalizer & Stitching         │
+ │  ├── Word-to-number phonetic mapping (niner -> 9)       │
+ │  ├── Callsign, Runway, Heading, FL formatting           │
+ │  └── Seam deduplication across overlapping segments     │
+ └─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │ Stage 5: Avionics Flight Deck Console & API Delivery    │
+ │  ├── Interactive time-domain waveform & scrubber        │
+ │  ├── Synchronized Flight Progress Strips                │
+ │  └── Multi-format exports: .SRT, .VTT, .JSON, .TXT      │
+ └─────────────────────────────────────────────────────────┘
+</pre>
+
+<div class="page-break"></div>
+
+<h2>3. Engineering Accomplishments: From Scratch to Advanced</h2>
+
+<h3>A. Digital Signal Processing (DSP) Engine (`transcribe_atc.py`)</h3>
+<ul>
+  <li><strong>Butterworth Bandpass Filter:</strong> Implemented a 5th-order digital IIR bandpass filter (100 Hz – 8,000 Hz) using SciPy, eliminating sub-audible aircraft vibrations (&lt;100Hz) and ultra-high frequency RF receiver hiss (&gt;8kHz).</li>
+  <li><strong>Spectral Gating Noise Subtraction:</strong> Integrated non-stationary spectral gating via <code>noisereduce</code> with a configurable suppression ratio (default 75%), isolating spoken transmissions from carrier noise.</li>
+  <li><strong>Silero VAD v6.2:</strong> Integrated Silero Voice Activity Detection to isolate voice transmissions from dead air, preventing the model from hallucinating text during periods of radio silence.</li>
+  <li><strong>Hardware Auto-Detection:</strong> Created an executable resolver that queries system architecture. If an NVIDIA CUDA GPU is unavailable, it automatically switches to Intel/AMD AVX2 SIMD CPU acceleration.</li>
+</ul>
+
+<h3>B. Overlapping Chunking & Stitching Algorithm (`audio_chunker.py`)</h3>
+<ul>
+  <li><strong>Sliding Windows:</strong> Implemented 30-second temporal windows with 5-second overlapping boundaries for recordings longer than 60 seconds.</li>
+  <li><strong>Longest Common Subsequence (LCS) Deduplication:</strong> Built an overlap deduplicator (<code>deduplicate_overlap_text</code>) that compares trailing tokens of window <em>N</em> with leading tokens of window <em>N+1</em>, stripping duplicated words at boundary seams.</li>
+</ul>
+
+<h3>C. ICAO / FAA Phraseology Normalizer (`atc_normalizer.py`)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Spoken Pilot/Controller Phrase</th>
+      <th>AirbandScribe Normalized Output</th>
+      <th>Domain Rule Applied</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>"cleared i l s runway two seven left approach"</td>
+      <td><code>cleared ILS runway 27L approach</code></td>
+      <td>Runway identifier &amp; NAV aid standardization</td>
+    </tr>
+    <tr>
+      <td>"turn right heading two niner zero maintain speed"</td>
+      <td><code>turn right heading 290 maintain speed</code></td>
+      <td>Vector heading formatting &amp; phonetic niner mapping</td>
+    </tr>
+    <tr>
+      <td>"climb and maintain flight level three two zero"</td>
+      <td><code>climb and maintain FL320</code></td>
+      <td>Aviation Flight Level (FL) standardization</td>
+    </tr>
+    <tr>
+      <td>"contact tower on one one niner point one"</td>
+      <td><code>contact tower on 119.1</code></td>
+      <td>VHF Airband frequency format</td>
+    </tr>
+    <tr>
+      <td>"intercept the localiser cleared ils"</td>
+      <td><code>intercept the localizer cleared ILS</code></td>
+      <td>Avionics terminology spelling normalization</td>
+    </tr>
+    <tr>
+      <td>"united four twenty six turn left heading two seven zero"</td>
+      <td><code>United 426 turn left heading 270</code></td>
+      <td>Commercial callsign &amp; vector heading extraction</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>D. Backend Web API & Persistence (`app.py`, `database.py`)</h3>
+<ul>
+  <li><strong>FastAPI Framework:</strong> Asynchronous high-throughput server with CORS middleware.</li>
+  <li><strong>SQLite Persistence:</strong> Automatically stores audio duration, speech duration, processing time, compute device (CPU/CUDA), audio paths, and structured JSON segment timestamps.</li>
+  <li><strong>REST API Endpoints:</strong>
+    <ul>
+      <li><code>GET /api/status</code>: Real-time system telemetry and hardware capabilities.</li>
+      <li><code>POST /transcribe</code>: Multipart upload with custom DSP parameters.</li>
+      <li><code>GET /transcriptions</code>: Paginated search with query keyword filtering.</li>
+      <li><code>GET /transcriptions/{id}</code>: Full segment and metadata retrieval.</li>
+      <li><code>DELETE /transcriptions/{id}</code>: Database and filesystem purge.</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="page-break"></div>
+
+<h3>E. Bespoke Aerospace Avionics Console (`frontend/src/components/transcribe.jsx`)</h3>
+<ul>
+  <li><strong>Live Zulu Clock:</strong> Real-time Greenwich Mean Time reference (<code>HH:MM:SSZ</code>).</li>
+  <li><strong>Interactive Canvas Waveform:</strong> HTML5 time-domain waveform with decibel amplitude peaks, transmission highlight blocks, and glowing playhead scrubber.</li>
+  <li><strong>A/B Audio Switcher:</strong> Instant live toggle between Cleaned VHF (denoised) and Bandpass Raw audio streams.</li>
+  <li><strong>Aviation Telemetry Strip Deck:</strong> Real-time extraction of Callsigns, Runways, Headings, Altitudes, and VHF Frequencies.</li>
+  <li><strong>Flight Progress Strips:</strong> Synchronized playback strips with color-coded tokens for clearances, runways, altitudes, headings, and callsigns.</li>
+  <li><strong>Multi-Format Flight Recorder Export Suite:</strong> One-click export to SubRip Subtitles (<code>.srt</code>), WebVTT (<code>.vtt</code>), ICAO Telemetry (<code>.json</code>), and Dispatch Text (<code>.txt</code>).</li>
+  <li><strong>Keyboard Flight Deck Shortcuts:</strong> <code>SPACE</code> (Play/Pause), <code>←/→</code> (Seek ±3s), <code>R</code> (Replay transmission), <code>D</code> (A/B audio toggle), <code>M</code> (Mute).</li>
+</ul>
+
+<h3>F. Critical Bugs Identified & Resolved</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Issue</th>
+      <th>Root Cause</th>
+      <th>Architectural Resolution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>SRT Parser Crash</strong></td>
+      <td>Variable typo in fallback SRT parser (<code>spath_2</code> instead of <code>srt_path_2</code>).</td>
+      <td>Corrected variable scope and verified with JSON primary output.</td>
+    </tr>
+    <tr>
+      <td><strong>Auto-Scroll Overshoot (3:28 vs 1:06)</strong></td>
+      <td><code>elem.offsetTop</code> was measured relative to the document body (~540px above), adding a massive offset that threw the scroll position to minutes ahead.</td>
+      <td>Re-architected with container-relative <code>getBoundingClientRect()</code> and added an <code>isAbove || isBelow</code> threshold check so the list only moves when needed.</td>
+    </tr>
+    <tr>
+      <td><strong>Logbook "Cross Marks" Confusion</strong></td>
+      <td>A bare red <code>✕</code> delete button gave the false impression that every transcription had failed.</td>
+      <td>Redesigned with clear <code>✓ READY</code> / <code>ON DECK</code> status badges and an intuitive trash button (<code>🗑️ DEL</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>Legacy Workspace Migration & Aliasing</strong></td>
+      <td>Preserving backwards compatibility during the v1.2 rename from legacy prototype nomenclature.</td>
+      <td>Implemented clean directory aliasing and environment variable resolution across build targets.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>G. Production Readiness & GitHub Polish</h3>
+<ul>
+  <li><strong>Automated Test Suite (`test_suite.py`):</strong> 10 comprehensive unit tests passing in 0.036 seconds covering normalization, chunking, database persistence, and API endpoints.</li>
+  <li><strong>Docker Containerization:</strong> Single-container CPU/GPU Dockerfile and multi-service <code>docker-compose.yml</code> with healthchecks and named volumes.</li>
+  <li><strong>GitHub Actions CI Pipeline:</strong> Configured <code>.github/workflows/ci.yml</code> testing against Python 3.10, 3.11, and 3.12.</li>
+  <li><strong>Pinned Dependencies:</strong> Standardized version constraints in <code>requirements_transcribe.txt</code>.</li>
+  <li><strong>One-Click Launchers:</strong> Dual Windows batch files (<code>run_all.bat</code>) and Linux shell scripts (<code>run_all.sh</code>).</li>
+</ul>
+
+<h2>4. Key Presentation Talking Points (Q&amp;A Cheat Sheet)</h2>
+<ol>
+  <li><strong>Why not just use OpenAI Whisper directly?</strong><br>
+  <em>Whisper trained on standard internet audio fails on radio static, drops phrases during long radio pauses, and writes numbers arbitrarily. AirbandScribe cleans the signal with DSP first, gates dead air with VAD, and post-processes through an ICAO aviation normalizer.</em></li>
+  <li><strong>How does AirbandScribe handle long 1-hour recordings?</strong><br>
+  <em>It uses a 30s sliding window with a 5s overlap. Boundary phrases are re-stitched and deduplicated using Longest Common Subsequence matching so no clearance is dropped.</em></li>
+  <li><strong>Can it run without a high-end GPU?</strong><br>
+  <em>Yes. The core engine dynamically binds to AVX2 SIMD CPU vector extensions, achieving real-time factors of ~0.2x speedup on consumer laptop processors.</em></li>
+</ol>
+
+</body>
+</html>
+

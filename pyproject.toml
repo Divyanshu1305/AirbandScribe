@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=65.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airband-scribe"
+version = "1.2.0"
+description = "Aeronautical VHF Airband Speech-to-Text Intelligence and Telemetry Workstation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Divyanshu Shekhar", email = "ds05sharma@gmail.com" }
+]
+keywords = [
+    "aviation",
+    "atc",
+    "speech-recognition",
+    "audio-signal-processing",
+    "whisper",
+    "fastapi",
+    "dsp"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+dependencies = [
+    "numpy>=1.26.0,<2.0.0",
+    "scipy>=1.13.0,<2.0.0",
+    "librosa>=0.10.2,<0.11.0",
+    "soundfile>=0.12.1,<0.13.0",
+    "noisereduce>=3.0.0,<4.0.0",
+    "fastapi>=0.115.0,<0.116.0",
+    "uvicorn[standard]>=0.32.0,<0.33.0",
+    "python-multipart>=0.0.12,<0.1.0",
+    "httpx>=0.27.0,<0.28.0",
+    "gguf>=0.10.0,<0.11.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "flake8>=7.0.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

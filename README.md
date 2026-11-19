@@ -9,6 +9,10 @@
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Aviation](https://img.shields.io/badge/Band-VHF%20118--137%20MHz-f59e0b?style=for-the-badge)
 
+<p align="center">
+  <img src="docs/screenshots/workstation_view.png" alt="AirbandScribe Avionics Workstation" width="100%" />
+</p>
+
 **AirbandScribe** is an end-to-end aeronautical speech signal intelligence and automated transcription platform built specifically for noisy, fast-paced VHF radio communications between air traffic controllers and pilots.
 
 Equipped with 5th-order Butterworth bandpass filtering, spectral noise gating, Silero Voice Activity Detection (VAD), overlapping window chunking, domain-specific ICAO phraseology normalization, and an aerospace flight progress strip console.
@@ -239,18 +243,22 @@ GET /transcriptions?page=1&limit=10&search=runway
 
 ## 🧪 Test Suite & Verification
 
-AirbandScribe includes a 10-test unit test suite covering phraseology normalization, overlapping audio chunking, SQLite persistence, and API integration.
+AirbandScribe includes an 18-test automated verification suite covering phraseology normalization, overlapping audio chunking, SQLite persistence, and API integration.
 
 To run tests:
 ```bash
 python test_suite.py
 ```
 
+Or using unittest discovery:
+```bash
+python -m unittest discover tests
+```
+
 Expected output:
 ```text
-..........
 ----------------------------------------------------------------------
-Ran 10 tests in 0.039s
+Ran 18 tests in 0.076s
 
 OK
 ```
@@ -266,22 +274,36 @@ AirbandScribe/
 ├── audio_chunker.py            # Overlapping chunker & overlap deduplicator
 ├── database.py                 # SQLite persistence & flight audit trail
 ├── transcribe_atc.py           # Main DSP pipeline & CrispASR wrapper
-├── test_suite.py               # Unit & integration test suite
+├── run_transcription.py        # CLI batch processing with automatic chunking
+├── test_suite.py               # Comprehensive test discovery runner
+├── pyproject.toml              # Modern Python package configuration
+├── requirements.txt            # Python dependencies
 ├── Dockerfile                  # Container definition for CPU deployment
 ├── docker-compose.yml          # Multi-profile orchestration (CPU/GPU)
-├── requirements_transcribe.txt # Pinned Python dependencies
 ├── run_all.bat / run_all.sh    # One-click full stack launchers
-├── bin/
-│   └── cpu/                    # Native CrispASR CPU binary
-├── models/
-│   └── ggufs/                  # GGUF Speech Recognition weights
+├── docs/                       # Architecture specs & interface screenshots
+│   └── screenshots/            # High-resolution console captures
+├── tests/                      # Automated unit, integration & QA tests
+│   ├── test_api_and_db.py
+│   ├── test_normalizer_and_chunker.py
+│   └── test_qa_suite.py
 └── frontend/                   # React 18 + Vite Avionics Web Console
     ├── index.html              # HTML5 entrypoint with aviation typography
     ├── vite.config.js          # Reverse-proxy dev configuration
     └── src/
         ├── App.jsx             # Root layout container
+        ├── styles/
+        │   └── tokens.css      # Calibrated aviation design system tokens
         └── components/
-            └── transcribe.jsx  # Interactive Avionics Flight Console
+            ├── transcribe.jsx          # Master console orchestrator
+            ├── Header.jsx              # UTC clock, status & brand header
+            ├── WaveformScope.jsx       # Real-time oscilloscope & playback
+            ├── IngestionDeck.jsx       # Audio file drag & upload controls
+            ├── TelemetryMatrix.jsx     # Flight metrics, frequencies & audio toggle
+            ├── FlightProgressStrips.jsx # Synchronized ATC progress strips
+            ├── FlightLogbook.jsx       # Flight transmission audit logbook
+            ├── SignalLab.jsx           # DSP acoustics interactive lab
+            └── PresentationMode.jsx    # Fullscreen presentation viewer
 ```
 
 ---

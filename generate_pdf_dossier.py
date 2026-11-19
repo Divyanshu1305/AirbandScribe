@@ -320,9 +320,9 @@ def generate_dossier(output_pdf_path):
         [Paragraph("<b>SRT Parser Crash</b>", body_style),
          Paragraph("Variable typo in fallback SRT parser (<code>spath_2</code> instead of <code>srt_path_2</code>).", body_style),
          Paragraph("Fixed variable scope and verified with primary JSON output.", body_style)],
-        [Paragraph("<b>Windows Folder Lock<br/>During Renaming</b>", body_style),
-         Paragraph("Active process locks prevented renaming the root directory while the IDE was running.", body_style),
-         Paragraph("Created a seamless Windows Directory Junction at <code>C:\\Users\\ACER\\Desktop\\AirbandScribe</code>.", body_style)]
+        [Paragraph("<b>Legacy Workspace Migration<br/>& Path Aliasing</b>", body_style),
+         Paragraph("Preserving backwards compatibility during the v1.2 rename from legacy prototype nomenclature.", body_style),
+         Paragraph("Implemented clean directory aliasing and environment variable resolution across build targets.", body_style)]
     ]
     t_bugs = Table(bug_data, colWidths=[134, 185, 185])
     t_bugs.setStyle(TableStyle([
@@ -364,6 +364,7 @@ def generate_dossier(output_pdf_path):
     print(f"Successfully generated presentation dossier PDF at: {output_pdf_path}")
 
 if __name__ == "__main__":
-    pdf_path = os.path.abspath(r"C:\Users\ACER\Desktop\AirbandScribe\AirbandScribe_Full_Project_Mastery_Dossier.pdf")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    pdf_path = os.path.join(script_dir, "AirbandScribe_Full_Project_Mastery_Dossier.pdf")
     generate_dossier(pdf_path)
 

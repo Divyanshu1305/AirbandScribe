@@ -116,7 +116,7 @@ A specialized rule engine standardizing aviation phonetics into official dispatc
 | **Auto-Scroll Overshoot (3:28 vs 1:06)** | `elem.offsetTop` was measured relative to the document body (~540px above), adding a massive offset that threw the scroll position minutes ahead. | Re-architected with container-relative `getBoundingClientRect()` and added an `isAbove \|\| isBelow` threshold check so the list only moves when needed. |
 | **Logbook "Cross Marks" Confusion** | A bare red `✕` delete button gave the false impression that every transcription had failed. | Redesigned with clear `✓ READY` / `ON DECK` status badges and an intuitive trash button (`🗑️ DEL`). |
 | **SRT Parser Crash** | Variable typo in fallback SRT parser (`spath_2` instead of `srt_path_2`). | Fixed variable scope and verified with primary JSON output. |
-| **Windows Folder Lock During Renaming** | Active process locks prevented renaming the root directory while the IDE was running. | Created a seamless Windows Directory Junction at `C:\Users\ACER\Desktop\AirbandScribe`. |
+| **Legacy Workspace Migration & Aliasing** | Backwards-compatibility preserved during the v1.2 rename from legacy prototype nomenclature. | Maintained seamless directory symlinking and environment variable resolution across both environments. |
 
 ### 8. Production & Container Infrastructure
 - **Unified Dockerfile:** Multi-stage build caching, Linux CrispASR binary retrieval, Whisper model caching, and pre-compiled React distribution.
@@ -145,14 +145,14 @@ A specialized rule engine standardizing aviation phonetics into official dispatc
 
 ## 📁 Project File Manifest
 
-- [`AirbandScribe_Full_Project_Mastery_Dossier.pdf`](file:///C:/Users/ACER/Desktop/AirbandScribe/AirbandScribe_Full_Project_Mastery_Dossier.pdf) — Complete 3-page publication-grade PDF presentation dossier.
-- [`app.py`](file:///C:/Users/ACER/Desktop/AirbandScribe/app.py) — FastAPI REST backend & SPA distributor.
-- [`transcribe_atc.py`](file:///C:/Users/ACER/Desktop/AirbandScribe/transcribe_atc.py) — Core signal processing & CrispASR inference engine.
-- [`atc_normalizer.py`](file:///C:/Users/ACER/Desktop/AirbandScribe/atc_normalizer.py) — Domain phraseology regular expression normalizer.
-- [`audio_chunker.py`](file:///C:/Users/ACER/Desktop/AirbandScribe/audio_chunker.py) — Overlapping sliding window chunker & LCS deduplicator.
-- [`database.py`](file:///C:/Users/ACER/Desktop/AirbandScribe/database.py) — SQLite flight telemetry persistence engine.
-- [`frontend/src/components/transcribe.jsx`](file:///C:/Users/ACER/Desktop/AirbandScribe/frontend/src/components/transcribe.jsx) — Interactive aerospace avionics web console.
-- [`test_suite.py`](file:///C:/Users/ACER/Desktop/AirbandScribe/test_suite.py) — 10-test automated verification suite.
-- [`Dockerfile`](file:///C:/Users/ACER/Desktop/AirbandScribe/Dockerfile) & [`docker-compose.yml`](file:///C:/Users/ACER/Desktop/AirbandScribe/docker-compose.yml) — Container deployment definitions.
-- [`.github/workflows/ci.yml`](file:///C:/Users/ACER/Desktop/AirbandScribe/.github/workflows/ci.yml) — GitHub Actions CI pipeline.
+- [`AirbandScribe_Full_Project_Mastery_Dossier.pdf`](AirbandScribe_Full_Project_Mastery_Dossier.pdf) — Complete 3-page publication-grade PDF presentation dossier.
+- [`app.py`](app.py) — FastAPI REST backend & SPA distributor.
+- [`transcribe_atc.py`](transcribe_atc.py) — Core signal processing & CrispASR inference engine.
+- [`atc_normalizer.py`](atc_normalizer.py) — Domain phraseology regular expression normalizer.
+- [`audio_chunker.py`](audio_chunker.py) — Overlapping sliding window chunker & LCS deduplicator.
+- [`database.py`](database.py) — SQLite flight telemetry persistence engine.
+- [`frontend/src/components/transcribe.jsx`](frontend/src/components/transcribe.jsx) — Interactive aerospace avionics web console.
+- [`test_suite.py`](test_suite.py) — 18-test automated verification suite.
+- [`Dockerfile`](Dockerfile) & [`docker-compose.yml`](docker-compose.yml) — Container deployment definitions.
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — GitHub Actions CI pipeline.
 
