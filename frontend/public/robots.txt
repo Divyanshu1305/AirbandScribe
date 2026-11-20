@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://divyanshu1305.github.io/AirbandScribe/sitemap.xml

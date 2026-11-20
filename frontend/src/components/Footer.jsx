@@ -72,17 +72,44 @@ export default function Footer() {
                     </span>
                 </div>
 
-                {/* Compliance & Standards Badges */}
+                {/* Links, Open Source & Compliance Badges */}
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '10px',
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: '10px',
                     color: 'var(--color-text-2)'
                 }}>
+                    <a
+                        href="https://github.com/Divyanshu1305/AirbandScribe"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            padding: '4px 10px',
+                            backgroundColor: 'var(--color-surface-1)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: '3px',
+                            color: 'var(--color-pine-pri)',
+                            textDecoration: 'none',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <span>★</span> GitHub
+                    </a>
                     <span style={{
-                        padding: '3px 8px',
+                        padding: '4px 8px',
+                        backgroundColor: 'var(--color-surface-1)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '3px'
+                    }}>
+                        MIT LICENSE
+                    </span>
+                    <span style={{
+                        padding: '4px 8px',
                         backgroundColor: 'var(--color-surface-1)',
                         border: '1px solid var(--color-border)',
                         borderRadius: '3px'
@@ -90,15 +117,7 @@ export default function Footer() {
                         ICAO DOC 9432
                     </span>
                     <span style={{
-                        padding: '3px 8px',
-                        backgroundColor: 'var(--color-surface-1)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '3px'
-                    }}>
-                        BUTTERWORTH DSP
-                    </span>
-                    <span style={{
-                        padding: '3px 8px',
+                        padding: '4px 8px',
                         backgroundColor: 'var(--color-surface-1)',
                         border: '1px solid var(--color-border)',
                         borderRadius: '3px'
