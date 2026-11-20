@@ -3,6 +3,7 @@
 ### High-Precision Aeronautical VHF Speech Intelligence & Transcription Workstation
 
 ![CI Status](https://img.shields.io/badge/CI-Passing-10b981?style=for-the-badge&logo=githubactions&logoColor=white)
+[![Live Demo](https://img.shields.io/badge/Live%20Console-Visit%20Web%20App-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white)](https://divyanshu1305.github.io/AirbandScribe/)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-005571?style=for-the-badge&logo=fastapi)
 ![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-18.3-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -10,8 +11,12 @@
 ![Aviation](https://img.shields.io/badge/Band-VHF%20118--137%20MHz-f59e0b?style=for-the-badge)
 
 <p align="center">
-  <img src="docs/screenshots/workstation_view.png" alt="AirbandScribe Avionics Workstation" width="100%" />
+  <a href="https://divyanshu1305.github.io/AirbandScribe/">
+    <img src="docs/screenshots/workstation_view.png" alt="AirbandScribe Avionics Workstation" width="100%" />
+  </a>
 </p>
+
+> 🌐 **Live Public Web Workstation:** Access the interactive console directly at [https://divyanshu1305.github.io/AirbandScribe/](https://divyanshu1305.github.io/AirbandScribe/)
 
 **AirbandScribe** is an end-to-end aeronautical speech signal intelligence and automated transcription platform built specifically for noisy, fast-paced VHF radio communications between air traffic controllers and pilots.
 

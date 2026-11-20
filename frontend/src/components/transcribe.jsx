@@ -7,6 +7,7 @@ import FlightProgressStrips from './FlightProgressStrips.jsx';
 import FlightLogbook from './FlightLogbook.jsx';
 import SignalLab from './SignalLab.jsx';
 import PresentationMode from './PresentationMode.jsx';
+import Footer from './Footer.jsx';
 
 // ---------------------------------------------------------------------------
 // AirbandScribe // Aeronautical VHF Telemetry Benchmark Reference Record
@@ -572,6 +573,9 @@ export default function AirbandScribeConsole() {
                     <SignalLab />
                 )}
             </main>
+
+            {/* Global Aerospace Footer & Copyright Notice */}
+            <Footer />
 
             {/* Presentation Mode Overlay */}
             {isPresentationMode && (
